@@ -1,0 +1,7 @@
+*.zip
+_chk*.js
+_extract_modules.py
+.DS_Store
+Thumbs.db
+desktop.ini
+CityRoute AR*.jpg

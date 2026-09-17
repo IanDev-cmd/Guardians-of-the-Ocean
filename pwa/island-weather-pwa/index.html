@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1210">
+<title>Global Impact Ledger</title>
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../css/goo.css">
+<style>
+  :root{
+    --ink:#ffffff;
+    --ink-dim:rgba(255,255,255,0.62);
+    --ink-dimmer:rgba(255,255,255,0.42);
+    --card-bg:rgba(255,255,255,0.94);
+    --card-icon:#20241f;
+    --accent:#84c02c;
+    --divider:rgba(255,255,255,0.35);
+    --unit: 1px;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+  html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  body{
+    background-image:url('background.jpg');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
+  }
+
+  /* Fullscreen stage, everything scales off vmin so geometry ratio is
+     preserved identically across phone / tablet / desktop */
+  .stage{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:flex-end;
+    justify-content:flex-end;
+  }
+
+  /* The whole widget is sized as a phone-proportioned panel that scales
+     with viewport height, and simply centers itself on wider canvases
+     so the cloned layout never stretches or distorts */
+  /* Every measurement below is clamp(min, N-vmin, max). vmin is the
+     SMALLER of viewport width/height, so on a tall phone (portrait)
+     it tracks width, and on a wide monitor/browser window (landscape)
+     it tracks height — the column can never exceed the shorter
+     dimension and so can never get cut off top/bottom or overflow
+     sideways, on any device or window shape. */
+  .panel{
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100dvh;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    justify-content:center;
+    padding-right: clamp(16px, 5vmin, 56px);
+    padding-bottom: clamp(20px, 8vmin, 90px);
+    overflow:hidden;
+  }
+
+  .info{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    text-align:right;
+    color:var(--ink);
+    max-width:88vw;
+  }
+
+  .headline{
+    font-size: clamp(20px, 4.6vmin, 40px);
+    font-weight:600;
+    line-height:1.15;
+    letter-spacing:-0.3px;
+    margin:0 0 clamp(4px, 1vmin, 10px) 0;
+    max-width:78vmin;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+
+  .subtext{
+    font-size:clamp(10px, 2vmin, 15px);
+    font-weight:400;
+    line-height:1.45;
+    color:var(--ink-dim);
+    max-width:70vmin;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+
+  .fade{
+    opacity:0;
+    transform:translateY(4px);
+  }
+
+  .time{
+    margin-top:clamp(10px, 3vmin, 26px);
+    font-size:clamp(15px, 3.2vmin, 24px);
+    font-weight:500;
+    letter-spacing:0.5px;
+  }
+
+  .time sup{
+    font-size:0.55em;
+    font-weight:400;
+    margin-left:2px;
+  }
+
+  .date{
+    margin-top:clamp(2px, 0.6vmin, 6px);
+    font-size:clamp(8px, 1.6vmin, 12px);
+    font-weight:400;
+    color:var(--ink-dimmer);
+    line-height:1.4;
+  }
+
+  .divider{
+    margin-top:clamp(8px, 2.2vmin, 20px);
+    width:clamp(80px, 20vmin, 170px);
+    height:1px;
+    background:var(--divider);
+  }
+
+  .grid{
+    margin-top:clamp(8px, 2.2vmin, 20px);
+    display:grid;
+    grid-template-columns:repeat(4, clamp(24px, 6.2vmin, 42px));
+    grid-auto-rows:clamp(24px, 6.2vmin, 42px);
+    gap:clamp(4px, 1.3vmin, 10px);
+  }
+
+  .tile{
+    border-radius:clamp(7px, 1.7vmin, 13px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--card-bg);
+    box-shadow:0 6px 14px rgba(0,0,0,0.16);
+    cursor:pointer;
+    border:none;
+    padding:0;
+    transition:transform .12s ease, background .18s ease, box-shadow .18s ease;
+  }
+
+  .tile:hover{
+    transform:translateY(-2px) scale(1.05);
+    box-shadow:0 10px 20px rgba(0,0,0,0.22);
+  }
+
+  .tile:active{
+    transform:translateY(0) scale(0.96);
+  }
+
+  .tile svg{
+    width:clamp(11px, 2.6vmin, 18px);
+    height:clamp(11px, 2.6vmin, 18px);
+  }
+
+  .tile.active{
+    background:var(--accent);
+  }
+  .tile.active svg *{
+    stroke:#ffffff;
+  }
+  .tile svg *{
+    stroke:var(--card-icon);
+    transition:stroke .18s ease;
+  }
+
+  /* install button, unobtrusive, only shows when app is installable */
+  #installBtn{
+    display:none;
+    position:fixed;
+    top:16px;
+    right:16px;
+    z-index:5;
+    background:rgba(255,255,255,0.16);
+    border:1px solid rgba(255,255,255,0.35);
+    color:#fff;
+    font-family:inherit;
+    font-size:13px;
+    padding:8px 14px;
+    border-radius:20px;
+    backdrop-filter:blur(6px);
+  }
+</style>
+</head>
+<body data-shell="pwa">
+
+<div class="stage">
+  <div class="panel">
+    <div class="info">
+      <div class="headline" id="headlineText">Global Impact Ledger</div>
+      <div class="subtext" id="subtextText">Tracking 14 active deployment zones and 2.4M sq km of monitored terrain across 8 countries.</div>
+
+      <div class="time" id="timeText">--:--<sup id="ampm">am</sup></div>
+      <div class="date" id="dateText">—</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="grid" id="iconGrid">
+      <!-- tiles injected by script -->
+    </div>
+
+  </div>
+</div>
+
+<button id="installBtn">Install app</button>
+<button type="button" id="pwaCompassBtn" class="compass-fab" aria-label="GPS compass" style="left:16px;bottom:24px;">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><polygon points="12 6 14.2 12 12 18 9.8 12" fill="currentColor" stroke="none"/></svg>
+</button>
+<div class="pwa-load" id="pwaLoad">
+  <div class="em">🌍🌊</div>
+  <div class="spin"></div>
+  <div>Linking live 3D / 2D maps…</div>
+</div>
+<div class="pwa-frame" id="pwaFrame">
+  <button type="button" class="close-view" id="pwaCloseView">← Ledger</button>
+  <iframe id="pwaIframe" title="Guardians maps"></iframe>
+</div>
+<script src="../../js/goo-core.js"></script>
+<script src="../../js/goo-compass.js"></script>
+<script src="../../js/goo-shell.js"></script>
+<script src="../../js/pwa-app.js"></script>
+</body>
+</html>

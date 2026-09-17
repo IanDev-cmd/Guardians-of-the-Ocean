@@ -1,0 +1,25 @@
+{
+  "name": "Guardians of the Ocean",
+  "short_name": "Guardians",
+  "description": "Global Impact Ledger PWA with live 3D globe, 2D coastal maps and GPS compass.",
+  "start_url": "./pwa/island-weather-pwa/index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1210",
+  "theme_color": "#0b1210",
+  "icons": [
+    {
+      "src": "./pwa/island-weather-pwa/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./pwa/island-weather-pwa/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
