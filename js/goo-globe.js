@@ -17,8 +17,12 @@
   var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
   camera.position.set(0, 0.1, 7.3);
 
-  var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  var conn = navigator.connection || navigator.mozConnection || {};
+  var saveData = !!conn.saveData || /2g/.test(conn.effectiveType || '');
+  var low = saveData || (window.GOO && GOO.Device && GOO.Device.mobile);
+  var segs = low ? 32 : 48;
+  var renderer = new THREE.WebGLRenderer({ antialias:!low, alpha:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, low ? 1.25 : 1.5));
   mount.appendChild(renderer.domElement);
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.45));
@@ -67,7 +71,7 @@
     shininess:10, specular:0x2a5f8c,
     emissive:0xffffff, emissiveIntensity:0.0
   });
-  spin.add(new THREE.Mesh(new THREE.SphereGeometry(R, 48, 48), mat));
+  spin.add(new THREE.Mesh(new THREE.SphereGeometry(R, segs, segs), mat));
 
   function applyTexture(tex){
     mat.map = tex;
@@ -75,7 +79,7 @@
     mat.emissiveIntensity = 0.30;   // lifts the shadow side without washing out
     mat.needsUpdate = true;
   }
-  applyTexture(fallbackTexture());          // never render a blank sphere
+  applyTexture(fallbackTexture());
   var loader = new THREE.TextureLoader();
   loader.crossOrigin = 'anonymous';
   var TEX = {
@@ -83,11 +87,18 @@
     night:'https://threejs.org/examples/textures/planets/earth_lights_2048.jpg',
     marble:'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'
   };
-  loader.load(TEX.default, applyTexture, undefined, function(){ /* keep the procedural earth */ });
+  if(!saveData) loader.load(TEX.default, applyTexture, undefined, function(){});
   window.__globeTex = function(key){
     var url = TEX[key] || TEX.default;
     loader.load(url, applyTexture, undefined, function(){});
   };
+  var idlePrefetch = window.requestIdleCallback || function(fn){ setTimeout(fn, 1800); };
+  idlePrefetch(function(){
+    if(saveData) return;
+    var img = new Image();
+    img.referrerPolicy = 'no-referrer';
+    img.src = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/1/2';
+  }, { timeout:2000 });
 
   // additive fresnel halo — the luminous edge the reference has
   var fres = new THREE.ShaderMaterial({
@@ -198,4 +209,17 @@
     }
     renderer.render(scene, camera);
   })();
+
+  var lastPtr = Date.now();
+  addEventListener('pointerdown', function(){ lastPtr = Date.now(); }, { passive:true });
+  setInterval(function(){
+    if(Date.now() - lastPtr < 12000) return;
+    if(document.body.classList.contains('terra-open') || document.body.classList.contains('tut-on')) return;
+    if(document.getElementById('app') && document.getElementById('app').classList.contains('globe-focus')) return;
+    var comp = document.getElementById('goCompass');
+    if(comp && comp.classList.contains('open')) return;
+    if(window.GOO && GOO.Device && GOO.Device.reduced) return;
+    var c = PIN_CITIES[Math.floor(Math.random() * PIN_CITIES.length)];
+    if(window.__globeLook) window.__globeLook(c.lat, c.lng);
+  }, 12000);
 })();

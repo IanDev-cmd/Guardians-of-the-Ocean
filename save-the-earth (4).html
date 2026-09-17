@@ -15,10 +15,10 @@
 <link rel="preconnect" href="https://server.arcgisonline.com">
 <link rel="preconnect" href="https://upload.wikimedia.org">
 <link rel="dns-prefetch" href="https://commons.wikimedia.org">
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" as="script">
-<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" as="script">
-<link rel="preload" href="https://commons.wikimedia.org/wiki/Special:FilePath/Green%20Sea%20Turtle%20grazing%20seagrass.jpg?width=480" as="image">
+<link rel="preload" href="photos/card-thirsty.jpg" as="image">
+<link rel="preload" href="photos/city-jakarta.jpg" as="image">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="css/goo.css" />
 <script src="js/goo-core.js"></script>
@@ -75,19 +75,20 @@ html, body, a, button, .card{ cursor:none; }
 .cursor{
   position:fixed; left:0; top:0; z-index:9999;
   width:26px; height:26px; margin:-13px 0 0 -13px;
-  border:1.5px solid rgba(255,255,255,.92);
+  border:1.5px solid #3dff8a;
   border-radius:50%; pointer-events:none;
   will-change:transform;
-  transition:width .22s ease, height .22s ease, margin .22s ease,
-             border-color .22s ease, background-color .22s ease;
+  transition:width .18s ease, height .18s ease, margin .18s ease,
+             border-color .18s ease, background-color .18s ease;
 }
 .cursor.hot{
   width:44px; height:44px; margin:-22px 0 0 -22px;
-  background:rgba(255,255,255,.10);
+  background:rgba(61,255,138,.14);
+  border-color:#1f9254;
 }
 .ripple{
   position:fixed; z-index:9998; width:26px; height:26px; margin:-13px 0 0 -13px;
-  border:1.5px solid rgba(255,255,255,.9); border-radius:50%;
+  border:1.5px solid #3dff8a; border-radius:50%;
   pointer-events:none; animation:ripple .62s cubic-bezier(.2,.7,.3,1) forwards;
 }
 @keyframes ripple{
@@ -134,46 +135,50 @@ html, body, a, button, .card{ cursor:none; }
 
 /* ------------------------------------------------------- sidebar icon rail */
 .icons{
-  position:absolute; left:50%; top:9.5%; bottom:19.5%;
-  transform:translateX(-50%);
-  display:flex; flex-direction:column; justify-content:space-between; align-items:center;
-  z-index:8;
+  position:absolute; left:0; width:6.4%; top:11%; bottom:22%;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  gap:12px; z-index:8;
 }
 .icon-group{
-  display:flex; flex-direction:column; align-items:center; gap:1.35vw;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
 }
 .icon-wrap{ position:relative; display:block; }
 .icon-btn{
   display:flex; align-items:center; justify-content:center;
-  width:2.7vw; height:2.7vw; min-width:22px; min-height:22px;
-  background:none; border:none; padding:0; margin:0;
+  width:40px; height:40px; min-width:36px; min-height:36px;
+  background:var(--ico, #2f8fd6); border:none; padding:0; margin:0;
+  border-radius:16px;
+  box-shadow:0 8px 18px rgba(0,16,40,.28);
   -webkit-tap-highlight-color:transparent;
+  transition:transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+.icon-btn:hover, .icon-wrap.show .icon-btn{
+  transform:translateY(-1px) scale(1.04);
+  box-shadow:0 12px 22px rgba(0,16,40,.34);
+  filter:brightness(1.06);
 }
 .icon-btn svg{
-  width:1.55vw; height:1.55vw; min-width:14px; min-height:14px;
-  display:block; opacity:.95;
-  fill:none; stroke:#fff; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
-  transition:opacity .2s ease;
+  width:18px; height:18px; min-width:14px; min-height:14px;
+  display:block;
+  fill:none; stroke:#fff; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;
 }
-.icon-wrap:hover .icon-btn svg,
-.icon-wrap.show .icon-btn svg{ opacity:1; }
 
 /* the popup that slides out beside a sidebar icon, styled after the
    original watch-video button: white plate, label, colored icon chip */
 .icon-tip{
   position:absolute; left:100%; top:50%; z-index:30;
-  margin-left:.95vw;
+  margin-left:10px;
   display:flex; align-items:center; justify-content:space-between;
-  gap:.7vw; height:3.15vw; min-height:30px;
+  gap:8px; height:36px; min-height:30px;
   background:#fdfdfd;
-  padding:0 .7vw 0 1.05vw;
+  padding:0 8px 0 12px;
   white-space:nowrap; pointer-events:none;
-  font-family:inherit; font-size:1.02vw; font-weight:700;
-  letter-spacing:.05em; color:#1a2733;
-  box-shadow:0 .55vw 1.5vw rgba(0,16,40,.28);
+  font-family:inherit; font-size:12px; font-weight:700;
+  letter-spacing:.04em; color:#1a2733;
+  box-shadow:0 8px 20px rgba(0,16,40,.24);
   opacity:0;
-  transform:translate(-.85vw,-50%);
-  transition:opacity .3s ease, transform .38s cubic-bezier(.22,.9,.28,1);
+  transform:translate(-8px,-50%);
+  transition:opacity .28s ease, transform .32s cubic-bezier(.22,.9,.28,1);
 }
 .icon-wrap:hover .icon-tip,
 .icon-wrap.show .icon-tip{
@@ -188,11 +193,11 @@ html, body, a, button, .card{ cursor:none; }
   fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
 }
 @media (max-width:760px){
-  .icon-tip{ font-size:2vw; height:5.6vw; padding:0 1.6vw 0 2.2vw; }
-  .icon-btn{ width:5vw; height:5vw; }
-  .icon-btn svg{ width:3.4vw; height:3.4vw; }
-  .tip-ico{ width:4vw; height:4vw; }
-  .tip-ico svg{ width:2vw; height:2vw; }
+  .icon-tip{ font-size:12px; height:34px; padding:0 8px 0 12px; }
+  .icon-btn{ width:36px; height:36px; }
+  .icon-btn svg{ width:16px; height:16px; }
+  .tip-ico{ width:22px; height:22px; }
+  .tip-ico svg{ width:12px; height:12px; }
 }
 
 /* ------------------------------------------------------ floating ux card */
@@ -454,13 +459,12 @@ button.uxrow{
 .search-hits .empty{ padding:12px 14px; font-size:12px; color:#6b7268; }
 
 .gctrl{
-  position:absolute; left:62%; top:74%; z-index:8;
-  display:flex; flex-direction:column; gap:8px;
-  transition:left 1s cubic-bezier(.42,0,.2,1), top 1s cubic-bezier(.42,0,.2,1), transform 1s cubic-bezier(.42,0,.2,1);
+  position:fixed; left:7.2%; bottom:calc(3.4% + 112px); z-index:16;
+  display:flex; flex-direction:row; gap:8px;
 }
 .app.detail .gctrl{ opacity:0; pointer-events:none; }
 .app.globe-focus .gctrl{
-  left:50%; top:86%; transform:translateX(-50%); flex-direction:row; opacity:1; pointer-events:auto; z-index:14;
+  left:7.2%; top:auto; bottom:calc(3.4% + 112px); transform:none; flex-direction:row; opacity:1; pointer-events:auto; z-index:16;
 }
 .gctrl button{
   width:42px; height:42px; border:1px solid rgba(255,255,255,.5);
@@ -471,12 +475,12 @@ button.uxrow{
 .gctrl button svg{ width:18px; height:18px; stroke:#12202c; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .gctrl button:active{ transform:scale(.94); }
 .glayers{
-  position:absolute; left:62%; top:auto; bottom:8%; z-index:9;
+  position:fixed; left:7.2%; top:auto; bottom:calc(3.4% + 164px); z-index:17;
   display:none; min-width:180px; background:#fff; padding:6px;
   box-shadow:0 14px 32px rgba(0,16,40,.24);
 }
 .glayers.open{ display:block; }
-.app.globe-focus .glayers{ left:50%; bottom:4%; transform:translateX(-50%); }
+.app.globe-focus .glayers{ left:7.2%; bottom:calc(3.4% + 164px); transform:none; }
 .glayers button{
   display:flex; align-items:center; gap:8px; width:100%;
   border:none; background:#fff; padding:8px 10px; cursor:pointer;
@@ -500,7 +504,7 @@ button.uxrow{
 
 /* ------------------------------------------------------------ card list */
 .list{
-  position:absolute; left:calc(var(--card-x) - 2%); width:calc(var(--card-w) + 2%);
+  position:absolute; left:var(--card-x); width:var(--card-w);
   top:17.6%; bottom:10.4%; z-index:6; overflow:hidden;
   -webkit-mask-image:linear-gradient(to bottom, transparent 0%, #000 7%, #000 88%, transparent 100%);
           mask-image:linear-gradient(to bottom, transparent 0%, #000 7%, #000 88%, transparent 100%);
@@ -760,25 +764,14 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   position:absolute; left:16px; right:86px; bottom:16px; z-index:22;
   display:flex; flex-direction:column; gap:10px; align-items:stretch; pointer-events:none;
 }
-.terra-dock.cycle-mode{ align-items:stretch; }
 .terra-roadmap{
   pointer-events:auto; background:#fff; box-shadow:var(--shadow);
   border:1px solid rgba(255,255,255,.7); overflow:visible; position:relative;
-}
-.terra-dock.cycle-mode .terra-roadmap{
   position:fixed; left:18px; top:50%; transform:translateY(-50%);
   width:min(340px, 38vw); height:min(340px, 38vw); z-index:24;
 }
-.terra-dock.path-mode{
-  align-items:center;
-}
-.terra-dock.path-mode .terra-roadmap{
-  width:50%; max-width:50%; height:210px; align-self:center;
-}
-.terra-roadmap .rm-cycle, .terra-roadmap .rm-path{ width:100%; height:100%; }
-.terra-dock.path-mode .rm-cycle, .terra-dock.cycle-mode .rm-path{ display:none; }
 
-.rm-cycle{ position:relative; background:#fbfbfb; }
+.rm-cycle{ position:relative; background:#fbfbfb; width:100%; height:100%; }
 .rm-cycle svg.rm-ring{ width:100%; height:100%; display:block; }
 .rm-hub{
   position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
@@ -796,35 +789,6 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   fill:#c9f8d8 !important;
   filter:drop-shadow(0 0 10px rgba(46,214,110,.85));
 }
-.rm-path{ position:relative; background:linear-gradient(180deg,#fff 0%, #f6f7f9 100%); overflow:visible; }
-.rm-path svg.rm-wave{ position:absolute; inset:0; width:100%; height:100%; z-index:1; overflow:visible; }
-.rm-nodes{ position:absolute; inset:0; z-index:2; }
-.rm-node{
-  position:absolute; width:58px; height:58px; margin:-29px 0 0 -29px;
-  border-radius:50%; background:linear-gradient(160deg,#ffffff 0%, #f4f4f4 55%, #ececec 100%);
-  box-shadow: 6px 10px 18px rgba(40,50,70,.16), -3px -3px 10px rgba(255,255,255,.95), inset 0 1px 0 #fff;
-  display:flex; align-items:center; justify-content:center; z-index:2;
-  cursor:pointer; border:none; padding:0;
-  transition:box-shadow .28s ease, transform .28s ease;
-}
-.rm-node svg{ width:22px; height:22px; stroke:#4a5560; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
-.rm-node.on{
-  box-shadow:0 0 0 4px rgba(61,255,138,.95), 0 0 26px 8px rgba(46,214,110,.55), 6px 10px 18px rgba(40,50,70,.16);
-  transform:scale(1.04);
-}
-.rm-node.on svg{ stroke:#178a4a; }
-.rm-node-lab{
-  position:absolute; top:64px; left:50%; transform:translateX(-50%);
-  width:110px; text-align:center; pointer-events:none;
-}
-.rm-node-lab b{
-  display:block; font-size:9px; font-weight:700; letter-spacing:.08em;
-  font-family:'Space Grotesk',sans-serif; margin-bottom:3px;
-}
-.rm-node-lab i{
-  display:block; font-style:normal; font-size:8px; line-height:1.3; color:#7a828c;
-  font-family:'Space Grotesk',sans-serif;
-}
 .rm-tip{
   position:absolute; z-index:30; min-width:220px; max-width:280px;
   background:#fff; color:#1a2733; padding:12px 14px;
@@ -835,22 +799,6 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
 .rm-tip.show{ opacity:1; }
 .rm-tip b{ display:block; font-size:12px; font-weight:700; letter-spacing:.04em; margin-bottom:4px; font-family:'Space Grotesk',sans-serif; }
 .rm-tip i{ display:block; font-style:normal; font-size:11px; line-height:1.45; color:#5b6570; font-family:'Space Grotesk',sans-serif; }
-.rm-node.c0 b{ color:#2f6bff; }
-.rm-node.c1 b{ color:#7c4dff; }
-.rm-node.c2 b{ color:#e14cff; }
-.rm-node.c3 b{ color:#2f6bff; }
-.rm-node.c4 b{ color:#7c4dff; }
-.rm-node.c5 b{ color:#e14cff; }
-.rm-node.c6 b{ color:#2f6bff; }
-.rm-node.c7 b{ color:#e14cff; }
-.rm-path-tools{
-  position:absolute; right:10px; bottom:10px; display:flex; flex-direction:column; gap:8px; z-index:3;
-}
-.rm-path-tools span{
-  width:36px; height:36px; border-radius:10px; background:#fff;
-  box-shadow:0 4px 12px rgba(0,0,0,.12); display:flex; align-items:center; justify-content:center;
-}
-.rm-path-tools svg{ width:16px; height:16px; stroke:#4a5560; fill:none; stroke-width:1.8; stroke-linecap:round; }
 
 .terra-sbtn.active{ background:rgba(29,107,255,.14); }
 .terra-sbtn.active svg{ stroke:#1d6bff; }
@@ -944,11 +892,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   .terra-stat{ flex:1 1 30%; }
   .terra-stat b{ font-size:13px; }
   .terra-dock{ right:12px; left:12px; }
-  .terra-dock.path-mode .terra-roadmap{ height:168px; width:78%; max-width:78%; }
-  .terra-dock.cycle-mode .terra-roadmap{ width:min(260px, calc(100vw - 24px)); height:260px; left:12px; }
-  .rm-node{ width:44px; height:44px; margin:-22px 0 0 -22px; }
-  .rm-node svg{ width:16px; height:16px; }
-  .rm-node-lab{ width:80px; top:50px; }
+  .terra-roadmap{ width:min(260px, calc(100vw - 24px)); height:260px; left:12px; }
   .terra-layers{ display:none; }
   .terra-layers.open{ display:block; }
 }
@@ -968,7 +912,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
     <div class="icons" id="icons">
       <div class="icon-group">
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Globe / Earth">
+          <button class="icon-btn" type="button" aria-label="Globe / Earth" style="--ico:#2f8fd6">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3c2.4 2.4 3.8 5.6 3.8 9s-1.4 6.6-3.8 9c-2.4-2.4-3.8-5.6-3.8-9s1.4-6.6 3.8-9Z"/></svg>
           </button>
           <div class="icon-tip" data-card="globe">
@@ -977,7 +921,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Tree / Leaf">
+          <button class="icon-btn" type="button" aria-label="Tree / Leaf" style="--ico:#2e8b57">
             <svg viewBox="0 0 24 24"><path d="M12 2c5 4 8 8 8 12a8 8 0 0 1-16 0c0-4 3-8 8-12Z"/><path d="M12 22v-8"/></svg>
           </button>
           <div class="icon-tip" data-card="tree">
@@ -986,7 +930,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Bird / Wildlife">
+          <button class="icon-btn" type="button" aria-label="Bird / Wildlife" style="--ico:#3aa7a0">
             <svg viewBox="0 0 24 24"><path d="M3 15c2 1 4 1 6-1 1 3 4 5 8 4-1-1-1-2 0-3 2 0 4-1 5-3-2 1-3 1-4 0 1-1 2-3 1-5-1 2-3 3-5 3-2-2-5-2-7 0-2 0-3 2-4 5Z"/></svg>
           </button>
           <div class="icon-tip" data-card="bird">
@@ -995,7 +939,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Water Drop / Wave">
+          <button class="icon-btn" type="button" aria-label="Water Drop / Wave" style="--ico:#1e90ff">
             <svg viewBox="0 0 24 24"><path d="M12 2.7s-6.2 7.4-6.2 11.4a6.2 6.2 0 0 0 12.4 0C18.2 10.1 12 2.7 12 2.7Z"/></svg>
           </button>
           <div class="icon-tip" data-card="drop">
@@ -1007,7 +951,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
 
       <div class="icon-group">
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Shield Check">
+          <button class="icon-btn" type="button" aria-label="Shield Check" style="--ico:#dc7519">
             <svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 5-3.3 7.7-7 9-3.7-1.3-7-4-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg>
           </button>
           <div class="icon-tip" data-card="shield">
@@ -1016,7 +960,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Lock / Vault">
+          <button class="icon-btn" type="button" aria-label="Lock / Vault" style="--ico:#6b7280">
             <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9"/><path d="M7.5 11V7.5a4.5 4.5 0 0 1 9 0V11"/><circle cx="12" cy="15.3" r="1.3"/></svg>
           </button>
           <div class="icon-tip" data-card="lock">
@@ -1025,7 +969,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Sun / Energy">
+          <button class="icon-btn" type="button" aria-label="Sun / Energy" style="--ico:#f2a71b">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="3.5" y1="12" x2="1.5" y2="12"/><line x1="22.5" y1="12" x2="20.5" y2="12"/><line x1="5" y1="5" x2="6.6" y2="6.6"/><line x1="17.4" y1="17.4" x2="19" y2="19"/><line x1="19" y1="5" x2="17.4" y2="6.6"/><line x1="6.6" y1="17.4" x2="5" y2="19"/></svg>
           </button>
           <div class="icon-tip" data-card="sun">
@@ -1034,7 +978,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Receipt / File Proof">
+          <button class="icon-btn" type="button" aria-label="Receipt / File Proof" style="--ico:#e07a3f">
             <svg viewBox="0 0 24 24"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
           </button>
           <div class="icon-tip" data-card="receipt">
@@ -1046,7 +990,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
 
       <div class="icon-group">
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Milestone / Route">
+          <button class="icon-btn" type="button" aria-label="Milestone / Route" style="--ico:#7c5cff">
             <svg viewBox="0 0 24 24"><polygon points="1 6 1 21 8 18 16 21 23 18 23 3 16 6 8 3 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg>
           </button>
           <div class="icon-tip" data-card="milestone">
@@ -1055,7 +999,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Wallet">
+          <button class="icon-btn" type="button" aria-label="Wallet" style="--ico:#16a34a">
             <svg viewBox="0 0 24 24"><path d="M21 8H5a2 2 0 0 1 0-4h13v4"/><path d="M3 8v11a2 2 0 0 0 2 2h16v-6"/><path d="M17 13.5h4v3h-4a1.5 1.5 0 0 1 0-3Z"/></svg>
           </button>
           <div class="icon-tip" data-card="wallet">
@@ -1064,7 +1008,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Handshake / Stipend">
+          <button class="icon-btn" type="button" aria-label="Handshake / Stipend" style="--ico:#d97706">
             <svg viewBox="0 0 24 24"><path d="M2 12h4l3-3 3 3h2l3-3 3 3h2"/><path d="M9 12v3a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-3"/></svg>
           </button>
           <div class="icon-tip" data-card="handshake">
@@ -1073,7 +1017,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="External Link / Hash">
+          <button class="icon-btn" type="button" aria-label="External Link / Hash" style="--ico:#0ea5a4">
             <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
           </button>
           <div class="icon-tip" data-card="link">
@@ -1278,14 +1222,6 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="12 6 14 12 12 18 10 12"/></svg>
       </button>
     </div>
-    <div class="terra-sg">
-      <button class="terra-sbtn" id="terraViewCycle" type="button" aria-label="Circular roadmap">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
-      </button>
-      <button class="terra-sbtn active" id="terraViewPath" type="button" aria-label="Path roadmap">
-        <svg viewBox="0 0 24 24"><path d="M3 16c3-8 5-8 8 0s5 8 8 0 2-8 2-8"/><circle cx="7" cy="12" r="1.6"/><circle cx="12" cy="16" r="1.6"/><circle cx="17" cy="10" r="1.6"/></svg>
-      </button>
-    </div>
   </div>
 
   <div class="terra-layers" id="terraLayers">
@@ -1303,10 +1239,9 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
     <div class="lg-row"><span class="lg-sw" style="background:#7c5cff"></span> Storm surge</div>
   </div>
 
-  <div class="terra-dock path-mode" id="terraDock">
-    <div class="terra-roadmap path" id="terraRoadmap">
+  <div class="terra-dock cycle-mode" id="terraDock">
+    <div class="terra-roadmap" id="terraRoadmap">
       <div class="rm-cycle" id="rmCycle"></div>
-      <div class="rm-path" id="rmPath"></div>
       <div class="rm-tip" id="rmTip"></div>
     </div>
     <div class="terra-stats" id="terraStats">

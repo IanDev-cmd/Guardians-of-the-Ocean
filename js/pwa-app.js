@@ -50,12 +50,12 @@
   function openWebView(view){
     loadEl.classList.add('show');
     Sound.click();
+    iframe.src = APP + '?embed=1&from=pwa&view=' + encodeURIComponent(view);
     setTimeout(function(){
-      iframe.src = APP + '?embed=1&from=pwa&view=' + encodeURIComponent(view);
       frameEl.classList.add('show');
       loadEl.classList.remove('show');
       if (Notify) Notify.toast({ tone:'blue', title:'Live feed', sub:'Mobile 3D / 2D maps from the web app.', n:'📡' });
-    }, 900);
+    }, 700);
   }
 
   document.getElementById('pwaCloseView') && document.getElementById('pwaCloseView').addEventListener('click', function(){

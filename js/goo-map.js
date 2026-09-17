@@ -462,6 +462,7 @@
     topoLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', TILE_FAST);
     satLayer.addTo(map);
     map.on('zoomend', syncEdu);
+    map.on('dragstart zoomstart click', function(){ if(typeof bumpIdle === 'function') bumpIdle(); });
     rebuildOverlays();
     ready = true;
   }
@@ -480,27 +481,6 @@
   }
   var checkedPhases = {};
 
-  function wrapWave(pts, r){
-    var d = '', last = null;
-    pts.forEach(function(p, i){
-      var high = p[1] < 90;
-      var aIn, aOut, sweep;
-      if(high){ aIn = 155; aOut = 25; sweep = 0; }
-      else { aIn = 205; aOut = 335; sweep = 1; }
-      var s = polar(p[0], p[1], r, aIn);
-      var e = polar(p[0], p[1], r, aOut);
-      if(i===0){
-        d = 'M ' + (s[0]-30).toFixed(1) + ',' + s[1].toFixed(1) + ' L ' + s[0].toFixed(1) + ',' + s[1].toFixed(1);
-      } else {
-        var mx = (last[0] + s[0]) / 2;
-        d += ' C ' + mx.toFixed(1) + ',' + last[1].toFixed(1) + ' ' + mx.toFixed(1) + ',' + s[1].toFixed(1) + ' ' + s[0].toFixed(1) + ',' + s[1].toFixed(1);
-      }
-      d += ' A ' + r + ',' + r + ' 0 0 ' + sweep + ' ' + e[0].toFixed(1) + ',' + e[1].toFixed(1);
-      last = e;
-    });
-    return { d:d, last:last };
-  }
-
   function showRmTip(title, sub, x, y){
     var tip = document.getElementById('rmTip');
     if(!tip) return;
@@ -515,6 +495,8 @@
   }
 
   function renderRoadmap(){
+    var host = document.getElementById('rmCycle');
+    if(!host) return;
     var cx = 170, cy = 170, r0 = 62, r1 = 132;
     var segs = '', nums = '', icons = '', arrows = '';
     PHASES.forEach(function(p, i){
@@ -535,41 +517,9 @@
       var rx = tx - 7*Math.cos(ang+0.7), ry = ty - 7*Math.sin(ang+0.7);
       arrows += '<polygon points="'+tx.toFixed(1)+','+ty.toFixed(1)+' '+lx.toFixed(1)+','+ly.toFixed(1)+' '+rx.toFixed(1)+','+ry.toFixed(1)+'" fill="#8ec4bc"/>';
     });
-    document.getElementById('rmCycle').innerHTML =
+    host.innerHTML =
       '<svg class="rm-ring" viewBox="0 0 340 340">'+segs+nums+icons+arrows+'</svg>'+
       '<div class="rm-hub"><b>FIELD OPERATIONS<br>ROADMAP</b></div>';
-
-    var nodePos = [
-      {x:9,y:60},{x:21.5,y:30},{x:34,y:60},{x:46.5,y:30},
-      {x:59,y:60},{x:71.5,y:30},{x:84,y:60},{x:94,y:30}
-    ];
-    var box = document.getElementById('rmPath');
-    var w = Math.max(box.clientWidth || 0, 720);
-    var h = Math.max(box.clientHeight || 0, 200);
-    var pts = nodePos.map(function(n){ return [n.x/100*w, n.y/100*h]; });
-    var wave = wrapWave(pts, 34);
-    var last = wave.last;
-    var nodesHtml = PHASES.map(function(p, i){
-      var n = nodePos[i];
-      var on = checkedPhases[i] ? ' on' : '';
-      return '<button type="button" class="rm-node c'+(i%3)+on+'" data-i="'+i+'" style="left:'+n.x+'%;top:'+n.y+'%">'+
-        '<svg viewBox="0 0 24 24">'+PHASE_ICON[p.icon]+'</svg>'+
-        '<div class="rm-node-lab"><b>PHASE 0'+p.n+'</b><i>'+p.short+'</i></div></button>';
-    }).join('');
-    document.getElementById('rmPath').innerHTML =
-      '<svg class="rm-wave" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'+
-        '<defs><linearGradient id="rmGrad" x1="0" y1="0" x2="1" y2="0">'+
-          '<stop offset="0%" stop-color="#2f6bff"/><stop offset="50%" stop-color="#8a4dff"/><stop offset="100%" stop-color="#e14cff"/>'+
-        '</linearGradient></defs>'+
-        '<path d="'+wave.d+'" fill="none" stroke="url(#rmGrad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'+
-        '<path d="M '+last[0].toFixed(1)+' '+last[1].toFixed(1)+' L '+(last[0]+28)+' '+(last[1]-16)+'" fill="none" stroke="#e14cff" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 8"/>'+
-        '<polygon points="'+(last[0]+40)+','+(last[1]-26)+' '+(last[0]+24)+','+(last[1]-6)+' '+(last[0]+16)+','+(last[1]-22)+'" fill="#e14cff"/>'+
-      '</svg>'+
-      '<div class="rm-nodes">'+nodesHtml+'</div>'+
-      '<div class="rm-path-tools" aria-hidden="true">'+
-        '<span><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></span>'+
-        '<span><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></span>'+
-      '</div>';
 
     function togglePhase(i){
       checkedPhases[i] = !checkedPhases[i];
@@ -581,40 +531,22 @@
         n: '0' + PHASES[i].n
       });
     }
-    document.querySelectorAll('#rmPath .rm-node').forEach(function(el){
-      el.addEventListener('click', function(){ togglePhase(+el.dataset.i); });
-      el.addEventListener('mouseenter', function(){
-        var p = PHASES[+el.dataset.i];
-        var r = el.getBoundingClientRect();
-        var host = document.getElementById('terraRoadmap').getBoundingClientRect();
-        showRmTip('PHASE 0'+p.n+' · '+p.short, p.title+' — '+p.sub, r.left - host.left + r.width/2, r.top - host.top - 8);
-      });
-      el.addEventListener('mouseleave', hideRmTip);
-    });
-    document.querySelectorAll('#rmCycle .rm-seg').forEach(function(el){
+    host.querySelectorAll('.rm-seg').forEach(function(el){
       el.addEventListener('click', function(){ togglePhase(+el.dataset.i); });
       el.addEventListener('mouseenter', function(ev){
         var p = PHASES[+el.dataset.i];
-        var host = document.getElementById('terraRoadmap').getBoundingClientRect();
-        showRmTip('PHASE 0'+p.n+' · '+p.short, p.title+' — '+p.sub, ev.clientX - host.left, ev.clientY - host.top - 12);
+        var box = document.getElementById('terraRoadmap').getBoundingClientRect();
+        showRmTip('PHASE 0'+p.n+' · '+p.short, p.title+' — '+p.sub, ev.clientX - box.left, ev.clientY - box.top - 12);
       });
       el.addEventListener('mousemove', function(ev){
-        var tip = document.getElementById('rmTip');
-        if(!tip || !tip.classList.contains('show')) return;
-        var host = document.getElementById('terraRoadmap').getBoundingClientRect();
-        tip.style.left = (ev.clientX - host.left) + 'px';
-        tip.style.top = (ev.clientY - host.top - 12) + 'px';
+        var tipEl = document.getElementById('rmTip');
+        if(!tipEl || !tipEl.classList.contains('show')) return;
+        var box = document.getElementById('terraRoadmap').getBoundingClientRect();
+        tipEl.style.left = (ev.clientX - box.left) + 'px';
+        tipEl.style.top = (ev.clientY - box.top - 12) + 'px';
       });
       el.addEventListener('mouseleave', hideRmTip);
     });
-  }
-  function setRoadmapView(v){
-    var dock = document.getElementById('terraDock');
-    dock.classList.toggle('cycle-mode', v==='cycle');
-    dock.classList.toggle('path-mode', v==='path');
-    document.getElementById('terraViewCycle').classList.toggle('active', v==='cycle');
-    document.getElementById('terraViewPath').classList.toggle('active', v==='path');
-    requestAnimationFrame(renderRoadmap);
   }
 
   function cityById(id){
@@ -649,6 +581,43 @@
     });
   }
 
+  function reducedMotion(){
+    return window.GOO && GOO.Device && GOO.Device.reduced;
+  }
+
+  var cinematic = false;
+  var idleTimer = null;
+  var tourTimer = null;
+  var tourLast = '';
+
+  function stopTour(){
+    clearTimeout(tourTimer);
+    tourTimer = null;
+  }
+  function bumpIdle(){
+    clearTimeout(idleTimer);
+    stopTour();
+    if(!overlay.classList.contains('open') || cinematic || reducedMotion()) return;
+    idleTimer = setTimeout(startIdleTour, 8000);
+  }
+  function startIdleTour(){
+    if(!map || !overlay.classList.contains('open') || cinematic) return;
+    var pool = CITIES.filter(function(c){ return c.id !== tourLast; });
+    var next = pool[Math.floor(Math.random() * pool.length)] || CITIES[0];
+    tourLast = next.id;
+    window.__chosenCity = next.id;
+    var steps = [4, 6, 8, 10, 12];
+    var i = 0;
+    function step(){
+      if(!overlay.classList.contains('open') || cinematic) return;
+      map.flyTo(next.ll, steps[i], { duration:1.2, easeLinearity:0.28 });
+      i += 1;
+      if(i < steps.length) tourTimer = setTimeout(step, 1300);
+    }
+    map.setView([12, 20], 2, { animate:false });
+    tourTimer = setTimeout(step, 400);
+  }
+
   function openMap(cityId){
     var id = (typeof cityId === 'string' && cityId) ? cityId : (window.__chosenCity || 'jakarta');
     window.__chosenCity = id;
@@ -658,29 +627,44 @@
     if(modal) modal.classList.remove('open');
     var appEl = document.getElementById('app');
     if(appEl) appEl.classList.add('globe-focus');
+    cinematic = true;
+    stopTour();
+    clearTimeout(idleTimer);
+    var spinMs = reducedMotion() ? 800 : 5000;
+    window.__spinBoost = reducedMotion() ? 0 : 0.042;
     if(window.__globeLook) window.__globeLook(city.ll[0], city.ll[1]);
 
-    function showLeaflet(){
-      if(window.GOO && GOO.Notify) GOO.Notify.toast({ tone:'green', title:'Roadmap live', sub:'Globe locked · flying to ' + city.name + '.', n:'09' });
+    function showWorldThenCity(){
+      window.__spinBoost = 0;
+      if(window.GOO && GOO.Notify) GOO.Notify.toast({ tone:'green', title:'Roadmap live', sub:'Whole Earth, then ' + city.name + '.', n:'09' });
       overlay.classList.add('open');
       overlay.setAttribute('aria-hidden','false');
       overlay.removeAttribute('inert');
       document.body.classList.add('terra-open');
       initMap();
       renderRoadmap();
+      if(map){
+        map.setView([12, 20], 2, { animate:false });
+        map.invalidateSize();
+      }
       setTimeout(function(){
         if(map){
           map.invalidateSize();
-          map.flyTo(city.ll, 12, { duration:1.85, easeLinearity:0.22 });
+          map.flyTo(city.ll, 12, { duration: reducedMotion() ? 0.8 : 2.4, easeLinearity:0.22 });
         }
         if(appEl) appEl.classList.remove('globe-focus');
         renderRoadmap();
-      }, 280);
+        cinematic = false;
+        bumpIdle();
+      }, 720);
     }
-    setTimeout(showLeaflet, 920);
+    setTimeout(showWorldThenCity, spinMs);
   }
 
   function closeMap(){
+    cinematic = false;
+    stopTour();
+    clearTimeout(idleTimer);
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden','true');
     overlay.setAttribute('inert','');
@@ -689,6 +673,7 @@
     var appEl = document.getElementById('app');
     if(appEl) appEl.classList.remove('globe-focus');
     window.__globeAim = null;
+    window.__spinBoost = 0;
   }
 
   window.openTerraRoadmap = openMap;
@@ -702,9 +687,11 @@
   document.getElementById('terraCompass').addEventListener('click', function(){ if(map) fitAll(); });
   var gpsBtn = document.getElementById('terraGpsCompass');
   if(gpsBtn) gpsBtn.addEventListener('click', function(){ if(window.GOO && GOO.Compass) GOO.Compass.show('map'); });
-  document.getElementById('terraViewCycle').addEventListener('click', function(){ setRoadmapView('cycle'); });
-  document.getElementById('terraViewPath').addEventListener('click', function(){ setRoadmapView('path'); });
   renderRoadmap();
+
+  ['pointerdown','wheel','keydown','touchstart'].forEach(function(ev){
+    overlay.addEventListener(ev, bumpIdle, { passive:true });
+  });
 
   bindCitySearch(document.getElementById('gsearchIn'), document.getElementById('gsearchHits'), function(c){
     window.__chosenCity = c.id;

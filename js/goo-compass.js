@@ -6,6 +6,29 @@
   var Sound = GOO.Sound;
   var Notify = GOO.Notify;
 
+  var CARDS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  var DEGS = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
+  var ARROW_SVG =
+    '<svg class="go-needle" viewBox="0 0 72 88" aria-hidden="true">' +
+      '<defs>' +
+        '<linearGradient id="goNgrad" x1="36" y1="4" x2="36" y2="84" gradientUnits="userSpaceOnUse">' +
+          '<stop offset="0" stop-color="#8af5de"/>' +
+          '<stop offset=".45" stop-color="#4ee0c8"/>' +
+          '<stop offset="1" stop-color="#1fb8a4"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="goNshine" x1="12" y1="8" x2="40" y2="50" gradientUnits="userSpaceOnUse">' +
+          '<stop offset="0" stop-color="#fff" stop-opacity=".55"/>' +
+          '<stop offset="1" stop-color="#fff" stop-opacity="0"/>' +
+        '</linearGradient>' +
+        '<filter id="goNsh" x="-30%" y="-10%" width="160%" height="140%">' +
+          '<feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#1a4a48" flood-opacity=".35"/>' +
+        '</filter>' +
+      '</defs>' +
+      '<path filter="url(#goNsh)" fill="url(#goNgrad)" d="M36 6 C33 6 30 16 18 52 C16 58 20 64 28 64 L36 58 L44 64 C52 64 56 58 54 52 C42 16 39 6 36 6 Z"/>' +
+      '<path fill="url(#goNshine)" d="M36 10 C34 10 32 18 24 44 C28 42 32 40 36 40 Z"/>' +
+      '<path fill="#148f82" opacity=".35" d="M36 10 C38 10 40 18 48 44 C44 42 40 40 36 40 Z"/>' +
+    '</svg>';
+
   var Compass = {
     open: false,
     heading: 0,
@@ -38,7 +61,7 @@
               '<svg class="go-ticks" viewBox="0 0 200 200" aria-hidden="true"></svg>' +
               '<div class="go-labs" id="goLabs"></div>' +
             '</div>' +
-            '<div class="go-arrow" id="goArrow"><span></span></div>' +
+            '<div class="go-arrow" id="goArrow">' + ARROW_SVG + '</div>' +
           '</div>' +
           '<div class="go-compass-tools">' +
             '<button type="button" data-cmode="rose">Rose</button>' +
@@ -68,6 +91,7 @@
       this.els.alt = wrap.querySelector('#goAlt');
       this.els.acc = wrap.querySelector('#goAcc');
       this.els.cmap = wrap.querySelector('#goCmap');
+      this.els.labs = wrap.querySelectorAll('#goLabs span');
     },
 
     drawTicks: function (svg, labs) {
@@ -75,34 +99,42 @@
       var ns = 'http://www.w3.org/2000/svg';
       var g = document.createElementNS(ns, 'g');
       g.setAttribute('transform', 'translate(100,100)');
+      var ring = document.createElementNS(ns, 'circle');
+      ring.setAttribute('r', '88');
+      ring.setAttribute('fill', 'none');
+      ring.setAttribute('stroke', '#d4dae0');
+      ring.setAttribute('stroke-width', '0.6');
+      g.appendChild(ring);
       for (var d = 0; d < 360; d += 2) {
         var rad = d * Math.PI / 180;
-        var inner = d % 30 === 0 ? 78 : d % 10 === 0 ? 82 : 85;
+        var inner = d % 30 === 0 ? 78 : d % 10 === 0 ? 82 : 85.5;
         var ln = document.createElementNS(ns, 'line');
-        ln.setAttribute('x1', Math.sin(rad) * inner);
-        ln.setAttribute('y1', -Math.cos(rad) * inner);
-        ln.setAttribute('x2', Math.sin(rad) * 88);
-        ln.setAttribute('y2', -Math.cos(rad) * 88);
+        ln.setAttribute('x1', String(Math.sin(rad) * inner));
+        ln.setAttribute('y1', String(-Math.cos(rad) * inner));
+        ln.setAttribute('x2', String(Math.sin(rad) * 88));
+        ln.setAttribute('y2', String(-Math.cos(rad) * 88));
         ln.setAttribute('stroke', d % 30 === 0 ? '#9aa3ad' : '#c5ccd3');
-        ln.setAttribute('stroke-width', d % 30 === 0 ? '1.4' : '0.7');
+        ln.setAttribute('stroke-width', d % 30 === 0 ? '1.35' : d % 10 === 0 ? '0.9' : '0.55');
         g.appendChild(ln);
       }
       svg.appendChild(g);
-      ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'].forEach(function (c, i) {
+      CARDS.forEach(function (c, i) {
         var a = i * 45;
         var el = document.createElement('span');
         el.className = 'go-card' + (c.length === 1 ? ' major' : '');
         el.textContent = c;
-        el.style.transform = 'rotate(' + a + 'deg) translateY(-92px) rotate(' + (-a) + 'deg)';
+        el.dataset.a = String(a);
+        el.dataset.ring = 'card';
         labs.appendChild(el);
       });
-      for (var deg = 0; deg < 360; deg += 30) {
+      DEGS.forEach(function (deg) {
         var n = document.createElement('span');
         n.className = 'go-deg';
         n.textContent = String(deg);
-        n.style.transform = 'rotate(' + deg + 'deg) translateY(-62px) rotate(' + (-deg) + 'deg)';
+        n.dataset.a = String(deg);
+        n.dataset.ring = 'deg';
         labs.appendChild(n);
-      }
+      });
     },
 
     cardFrom: function (h) {
@@ -155,9 +187,19 @@
 
     paint: function () {
       if (!this.open || !this.els.rose) return;
-      this.els.rose.style.transform = 'rotate(' + (-this.heading) + 'deg)';
-      var h = Math.round(((this.heading % 360) + 360) % 360);
-      this.els.head.textContent = ('00' + h).slice(-3) + '°';
+      var h = ((this.heading % 360) + 360) % 360;
+      this.els.rose.style.transform = 'rotate(' + (-h) + 'deg)';
+      var labs = this.els.labs;
+      if (labs && labs.length) {
+        for (var i = 0; i < labs.length; i++) {
+          var el = labs[i];
+          var a = +el.dataset.a;
+          var y = el.dataset.ring === 'card' ? (el.classList.contains('major') ? -92 : -90) : -62;
+          el.style.transform = 'rotate(' + a + 'deg) translateY(' + y + 'px) rotate(' + (-a + h) + 'deg)';
+        }
+      }
+      var shown = Math.round(h);
+      this.els.head.textContent = ('00' + shown).slice(-3) + '°';
       this.els.card.textContent = this.cardFrom(h);
       this.els.alt.textContent = this.alt != null && isFinite(this.alt) ? ('ELE ' + Math.round(this.alt) + ' m') : 'ELE —';
       this.els.acc.textContent = this.gpsOk
@@ -250,6 +292,7 @@
       this.els.wrap.classList.add('open');
       this.setMode(mode || 'rose');
       this.startSensors();
+      this.paint();
       Sound.success();
       Notify.toast({ tone: 'blue', title: 'Compass live', sub: 'True heading, GPS elevation and calibrations are on.', n: 'N' });
     },

@@ -19,6 +19,7 @@
     fromPwa: /(?:^|[?&])from=pwa/.test(location.search),
     view: (location.search.match(/[?&]view=([a-z]+)/) || [])[1] || '',
     reduced: matchMedia('(prefers-reduced-motion: reduce)').matches,
+    saveData: !!(navigator.connection && navigator.connection.saveData),
     pwaShell: false,
     iconBase: ICON_BASE
   };

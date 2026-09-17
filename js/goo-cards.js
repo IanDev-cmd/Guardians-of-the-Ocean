@@ -120,7 +120,7 @@ var cur = document.getElementById('cur');
 var cx = innerWidth/2, cy = innerHeight/2, tx = cx, ty = cy;
 addEventListener('pointermove', function(e){ tx = e.clientX; ty = e.clientY; }, {passive:true});
 (function follow(){
-  cx += (tx-cx)*0.22; cy += (ty-cy)*0.22;
+  cx += (tx-cx)*0.62; cy += (ty-cy)*0.62;
   cur.style.transform = 'translate(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px)';
   requestAnimationFrame(follow);
 })();
@@ -436,14 +436,15 @@ document.addEventListener('pointerover', function(e){
 
 /* ------------------------------------------------------------- card list */
 var moved = false;
-function buildCard(c){
+function buildCard(c, idx){
   var b = document.createElement('button');
   b.className = 'card';
   b.type = 'button';
   b.dataset.id = c.id;
+  var eager = idx != null && idx < 3;
   b.innerHTML =
     '<div class="shot" style="background:' + c.fall + '">' +
-      (c.img ? '<img src="' + c.img + '" alt="" loading="lazy" decoding="async">' : '') +
+      (c.img ? '<img src="' + c.img + '" alt="" loading="' + (eager ? 'eager' : 'lazy') + '" decoding="async"' + (eager ? ' fetchpriority="high"' : '') + '>' : '') +
     '</div>' +
     '<span class="cap">' + c.l1 + '<br>' + c.l2 + '</span>';
   var im = b.querySelector('img');
@@ -463,10 +464,8 @@ function sizeCards(){
   return h + g;
 }
 
-CARDS.forEach(function(c){ track.appendChild(buildCard(c)); });
-CARDS.forEach(function(c){ track.appendChild(buildCard(c)); });  // seamless loop
-var firstShot = track.querySelector('img');
-if(firstShot){ firstShot.loading = 'eager'; firstShot.setAttribute('fetchpriority','high'); }
+CARDS.forEach(function(c, i){ track.appendChild(buildCard(c, i)); });
+CARDS.forEach(function(c){ track.appendChild(buildCard(c, 99)); });
 
 var pitch = sizeCards();
 var loopLen = pitch * CARDS.length;
@@ -488,7 +487,7 @@ function render(){
   boost += (speed - boost) * 0.06;
   document.getElementById('globeWrap').querySelector('.globe')
     .style.setProperty('--gscale', (1 + boost * 0.10).toFixed(4));
-  window.__spinBoost = boost * 0.004;
+  if(!app.classList.contains('globe-focus')) window.__spinBoost = boost * 0.004;
 
   requestAnimationFrame(render);
 }
