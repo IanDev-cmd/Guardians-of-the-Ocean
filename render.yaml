@@ -6,7 +6,7 @@ services:
     runtime: static
     repo: https://github.com/IanDev-cmd/Guardians-of-the-Ocean
     branch: main
-    buildCommand: echo "static"
+    buildCommand: "true"
     staticPublishPath: .
     headers:
       - path: /sw.js

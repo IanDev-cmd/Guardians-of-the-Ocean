@@ -31,3 +31,18 @@ Then open `http://127.0.0.1:8765/`. Mobile / standalone sessions land on the PWA
 | `render.yaml` | Render static site (`guardians-of-the-ocean`) |
 
 Install uses `manifest.webmanifest` (`start_url` is the PWA). Hosted as a static site — not the weott-proposal-engine Render service.
+
+## Deploy on Render (Static Site)
+
+This is **not** a Web Service. There is no `yarn start`.
+
+1. **New → Static Site** (URL should be `dashboard.render.com/static/new`).
+2. Connect `IanDev-cmd/Guardians-of-the-Ocean`, branch `main`.
+3. Fields:
+   - **Build Command:** `true`  
+     (`true` is a no-op. Do **not** type `static` — Render will try to run it as a program and fail.)
+   - **Publish Directory:** `.`
+4. Leave environment variables empty.
+5. Create / save, then **Manual Deploy → Deploy latest commit**.
+
+If a deploy already failed with `static: command not found`: open the service **Settings**, set Build Command to `true`, Publish Directory to `.`, save, and redeploy. Do not create a new Web Service.
