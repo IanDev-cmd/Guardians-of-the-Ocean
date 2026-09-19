@@ -45,13 +45,13 @@
   --panel-ink:#55616e;
   --rail-veil:rgba(0,14,40,.25);
 
-  /* type scale, ref px -> vw */
-  --t-hero:4.11vw;        /* 29px */
-  --t-detail:5.53vw;      /* 39px */
-  --t-body:0.851vw;       /* 6px  */
-  --t-panel:1.134vw;      /* 8px  */
-  --t-label:0.992vw;      /* 7px  */
-  --t-nav:0.851vw;        /* 6px  */
+  /* type scale — clamp so phone and desktop both read large */
+  --t-hero:clamp(36px, 6.4vw, 84px);
+  --t-detail:clamp(32px, 5.8vw, 72px);
+  --t-body:clamp(12px, 1.35vw, 18px);
+  --t-panel:1.134vw;
+  --t-label:clamp(11px, 1.15vw, 15px);
+  --t-nav:clamp(12px, 1.05vw, 16px);
 
   /* card list geometry */
   --card-x:79.9%;
@@ -65,10 +65,10 @@
 html,body{ margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#001135; }
 body{ font-family:'Quicksand',sans-serif; }
 
-.card .shot, .panel, .panel .shot, .uxcard, .icon-tip, .flyer, .gsearch input, .terra-search input,
+.card .shot, .panel .shot, .flyer{ overflow:hidden; border-radius:0; }
+.panel, .uxcard, .icon-tip, .gsearch input, .terra-search input,
 .terra-stat, .terra-roadmap, .terra-brand, .terra-filters, .terra-sg, .search-hits, .glayers,
 .tpop, .uxrow, .uxpill, .n-toast{ border-radius:var(--radius); }
-.card .shot, .panel .shot, .flyer{ overflow:hidden; }
 
 /* ---------------------------------------------------------- custom cursor */
 html, body, a, button, .card{ cursor:none; }
@@ -120,45 +120,45 @@ html, body, a, button, .card{ cursor:none; }
 
 /* ----------------------------------------------------------------- rail */
 .rail{
-  position:absolute; left:0; top:0; bottom:0; width:6.4%;
+  position:absolute; left:0; top:0; bottom:0; width:max(52px, 4.26%);
   background:var(--rail-veil);
   z-index:8;
 }
 .rail .logo{ position:absolute; left:50%; top:2.2%; transform:translateX(-50%); }
-.rail .logo svg{ width:2.5vw; height:2.5vw; min-width:18px; min-height:18px; display:block; }
+.rail .logo svg{ width:1.7vw; height:1.7vw; min-width:13px; min-height:13px; display:block; }
 .rail .socials{
   position:absolute; left:50%; top:84.9%; transform:translateX(-50%);
-  display:flex; flex-direction:column; align-items:center; gap:1.25vw;
+  display:flex; flex-direction:column; align-items:center; gap:1.1vw;
 }
 .rail .socials a{ display:block; color:#fff; }
-.rail .socials svg{ width:1.35vw; height:1.35vw; min-width:12px; min-height:12px; opacity:.95; display:block; }
+.rail .socials svg{ width:.92vw; height:.92vw; min-width:9px; min-height:9px; opacity:.95; display:block; }
 
 /* ------------------------------------------------------- sidebar icon rail */
 .icons{
-  position:absolute; left:0; width:6.4%; top:11%; bottom:22%;
+  position:absolute; left:0; width:max(52px, 4.26%); top:10%; bottom:20%;
   display:flex; flex-direction:column; justify-content:center; align-items:center;
-  gap:12px; z-index:8;
+  gap:0.55vw; z-index:8;
 }
 .icon-group{
-  display:flex; flex-direction:column; align-items:center; gap:8px;
+  display:contents;
 }
 .icon-wrap{ position:relative; display:block; }
 .icon-btn{
   display:flex; align-items:center; justify-content:center;
-  width:40px; height:40px; min-width:36px; min-height:36px;
+  width:clamp(28px, 2.6vw, 44px); height:clamp(28px, 2.6vw, 44px);
   background:var(--ico, #2f8fd6); border:none; padding:0; margin:0;
-  border-radius:16px;
-  box-shadow:0 8px 18px rgba(0,16,40,.28);
+  border-radius:0;
+  box-shadow:0 4px 10px rgba(0,16,40,.22);
   -webkit-tap-highlight-color:transparent;
-  transition:transform .16s ease, box-shadow .16s ease, filter .16s ease;
+  transition:transform .16s ease, filter .16s ease;
 }
 .icon-btn:hover, .icon-wrap.show .icon-btn{
-  transform:translateY(-1px) scale(1.04);
-  box-shadow:0 12px 22px rgba(0,16,40,.34);
-  filter:brightness(1.06);
+  transform:translateY(-1px);
+  filter:brightness(1.08);
 }
 .icon-btn svg{
-  width:18px; height:18px; min-width:14px; min-height:14px;
+  width:58%; height:58%;
+  min-width:14px; min-height:14px;
   display:block;
   fill:none; stroke:#fff; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;
 }
@@ -195,7 +195,7 @@ html, body, a, button, .card{ cursor:none; }
 @media (max-width:760px){
   .icon-tip{ font-size:12px; height:34px; padding:0 8px 0 12px; }
   .icon-btn{ width:36px; height:36px; }
-  .icon-btn svg{ width:16px; height:16px; }
+  .icon-btn svg{ width:20px; height:20px; }
   .tip-ico{ width:22px; height:22px; }
   .tip-ico svg{ width:12px; height:12px; }
 }
@@ -504,7 +504,7 @@ button.uxrow{
 
 /* ------------------------------------------------------------ card list */
 .list{
-  position:absolute; left:var(--card-x); width:var(--card-w);
+  position:absolute; left:calc(var(--card-x) - 2%); width:calc(var(--card-w) + 2%);
   top:17.6%; bottom:10.4%; z-index:6; overflow:hidden;
   -webkit-mask-image:linear-gradient(to bottom, transparent 0%, #000 7%, #000 88%, transparent 100%);
           mask-image:linear-gradient(to bottom, transparent 0%, #000 7%, #000 88%, transparent 100%);

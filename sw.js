@@ -1,4 +1,4 @@
-const CACHE_NAME = 'guardians-ocean-v4';
+const CACHE_NAME = 'guardians-ocean-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -42,31 +42,48 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-  const url = event.request.url;
-  if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
-    return;
-  }
-  if (url.includes('open-meteo.com') || url.includes('nominatim.openstreetmap.org') || url.includes('arcgisonline.com')) {
-    event.respondWith(
-      fetch(event.request).then((res) => {
+function networkFirst(request) {
+  return fetch(request)
+    .then((res) => {
+      if (res && res.ok) {
         const copy = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
-        return res;
-      }).catch(() => caches.match(event.request))
-    );
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)).catch(() => {});
+      }
+      return res;
+    })
+    .catch(() => caches.match(request));
+}
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  const url = event.request.url;
+  const path = new URL(url).pathname;
+  const live =
+    url.includes('open-meteo.com') ||
+    url.includes('nominatim.openstreetmap.org') ||
+    url.includes('arcgisonline.com');
+  const appFile =
+    event.request.mode === 'navigate' ||
+    live ||
+    /\.(html?|js|css|webmanifest|json)$/i.test(path) ||
+    path.endsWith('/');
+
+  if (appFile) {
+    event.respondWith(networkFirst(event.request));
     return;
   }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      const fetched = fetch(event.request).then((res) => {
-        if (res && res.ok && event.request.method === 'GET' && url.indexOf(self.location.origin) === 0) {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
-        }
-        return res;
-      }).catch(() => cached);
+      const fetched = fetch(event.request)
+        .then((res) => {
+          if (res && res.ok && event.request.method === 'GET' && url.indexOf(self.location.origin) === 0) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
+          }
+          return res;
+        })
+        .catch(() => cached);
       return cached || fetched;
     })
   );

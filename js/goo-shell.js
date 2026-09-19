@@ -224,7 +224,24 @@
     if (Compass) Compass.mount();
     applyViewQuery();
     if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-      navigator.serviceWorker.register(Device.iconBase + 'sw.js').catch(function () {});
+      var hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker
+        .register(Device.iconBase + 'sw.js', { updateViaCache: 'none' })
+        .then(function (reg) {
+          function ping() {
+            try { reg.update(); } catch (e) {}
+          }
+          ping();
+          document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') ping();
+          });
+        })
+        .catch(function () {});
+      if (hadController) {
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          location.reload();
+        });
+      }
     }
     setTimeout(function () { Tutorial.ask(); }, 700);
   }
