@@ -469,18 +469,6 @@ button.uxrow{
 }
 .globe canvas{ position:absolute; inset:0; width:100%!important; height:100%!important; display:block; }
 
-/* cloud puffs floating in front of the sphere (2-3 in the reference) */
-.cloud{
-  position:absolute; border-radius:50%; pointer-events:none; z-index:3;
-  background:radial-gradient(ellipse at 40% 35%, #ffffff 0%, #eaf6ff 46%, rgba(220,240,255,.72) 68%, rgba(210,235,255,0) 100%);
-  filter:blur(.12vw);
-}
-.cloud.c1{ left:62%; top:27%; width:12%; height:5.2%;  animation:drift1 17s ease-in-out infinite; }
-.cloud.c2{ left:22%; top:63%; width:9.5%; height:4.2%;  animation:drift2 21s ease-in-out infinite; }
-.cloud.c3{ left:46%; top:18%; width:8%; height:3.6%;  animation:drift1 25s ease-in-out infinite reverse; opacity:.8; }
-@keyframes drift1{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(-8%,3%); } }
-@keyframes drift2{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(9%,-4%); } }
-
 /* pin marker on the detail globe (~60% / 39% of the frame) */
 .pin{
   position:absolute; left:60%; top:39%; z-index:4;
@@ -1244,9 +1232,6 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   <div class="globe-wrap" id="globeWrap">
     <div class="globe" id="globeMount"></div>
     <div class="globe-pins" id="globePins"></div>
-    <div class="cloud c1"></div>
-    <div class="cloud c2"></div>
-    <div class="cloud c3"></div>
   </div>
   <div class="pin"></div>
 
