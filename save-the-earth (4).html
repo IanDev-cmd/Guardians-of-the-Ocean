@@ -656,10 +656,11 @@ button.uxrow{
   will-change:transform;
 }
 
-/* PWA / embed: same-size photo cards as a bottom horizontal strip */
+/* PWA phone only: same-size photo cards as a bottom horizontal strip.
+   Laptop / desktop web keeps the right-hand vertical list. */
+@media (max-width: 760px){
 html.embed .list,
-html.from-pwa .list,
-html.mobile .list{
+html.from-pwa .list{
   left:0; right:0; width:100%;
   top:auto; bottom:0;
   height:calc(15.1vh + 36px);
@@ -670,36 +671,31 @@ html.mobile .list{
   touch-action:pan-x;
 }
 html.embed .track,
-html.from-pwa .track,
-html.mobile .track{
+html.from-pwa .track{
   display:flex; flex-direction:row; align-items:stretch;
   position:relative; left:0; top:0; height:15.1vh; width:max-content;
 }
 html.embed .card,
-html.from-pwa .card,
-html.mobile .card{
+html.from-pwa .card{
   flex:0 0 auto;
   margin-bottom:0;
 }
 html.embed .scrollbar,
-html.from-pwa .scrollbar,
-html.mobile .scrollbar{
+html.from-pwa .scrollbar{
   left:14%; right:14%; width:auto;
   top:auto; bottom:8px; height:2px;
 }
 html.embed .scrollbar i,
-html.from-pwa .scrollbar i,
-html.mobile .scrollbar i{
+html.from-pwa .scrollbar i{
   width:22%; height:2px;
 }
 
 html.embed .gctrl,
 html.from-pwa .gctrl,
-html.mobile .gctrl,
 html.embed .app.globe-focus .gctrl,
-html.from-pwa .app.globe-focus .gctrl,
-html.mobile .app.globe-focus .gctrl{
+html.from-pwa .app.globe-focus .gctrl{
   bottom:calc(15.1vh + 44px);
+}
 }
 
 /* ---------------------------------------------------------- detail view */

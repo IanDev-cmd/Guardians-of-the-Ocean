@@ -561,7 +561,8 @@ function buildCard(c, idx){
 
 function hStrip(){
   var r = document.documentElement;
-  return r.classList.contains('embed') || r.classList.contains('from-pwa') || r.classList.contains('mobile');
+  var pwa = r.classList.contains('embed') || r.classList.contains('from-pwa');
+  return pwa && innerWidth <= 760;
 }
 
 function sizeCards(){
