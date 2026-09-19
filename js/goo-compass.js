@@ -51,23 +51,41 @@
         wrap.id = 'goCompass';
         wrap.className = 'go-compass';
         wrap.innerHTML =
-          '<div class="go-compass-hud">' +
-            '<b id="goHead">000°</b><i id="goCard">N</i>' +
-            '<span id="goAlt">ELE —</span><span id="goAcc">GPS …</span>' +
-          '</div>' +
-          '<div class="go-compass-stage">' +
-            '<div class="go-rose" id="goRose">' +
-              '<div class="go-cmap" id="goCmap"></div>' +
-              '<svg class="go-ticks" viewBox="0 0 200 200" aria-hidden="true"></svg>' +
-              '<div class="go-labs" id="goLabs"></div>' +
+          '<div class="go-compass-card tpop" role="dialog" aria-label="Field compass">' +
+            '<button type="button" class="go-compass-x" id="goCclose" aria-label="Close compass">×</button>' +
+            '<div class="tpop-h">' +
+              '<span class="tpop-rank" id="goRank">N</span>' +
+              '<div><b>FIELD COMPASS</b><i>GPS heading · figure-8 calibration</i></div>' +
+              '<span class="tpop-ph" id="goLive">SEEK</span>' +
             '</div>' +
-            '<div class="go-arrow" id="goArrow">' + ARROW_SVG + '</div>' +
-          '</div>' +
-          '<div class="go-compass-tools">' +
-            '<button type="button" data-cmode="rose">Rose</button>' +
-            '<button type="button" data-cmode="map">Map</button>' +
-            '<button type="button" data-cmode="immersive">Immerse</button>' +
-            '<button type="button" id="goCclose">Close</button>' +
+            '<p class="go-compass-copy">Hold the phone flat. Sweep a slow figure-8 until the ring locks green — then use Rose, Map, or Immerse.</p>' +
+            '<div class="tpop-kpis">' +
+              '<div class="tpop-kpi"><b id="goHead">000°</b><i>HEADING</i></div>' +
+              '<div class="tpop-kpi"><b id="goCard">N</b><i>CARDINAL</i></div>' +
+              '<div class="tpop-kpi"><b id="goAlt">—</b><i>ELEV</i></div>' +
+              '<div class="tpop-kpi"><b id="goAcc">…</b><i>GPS</i></div>' +
+            '</div>' +
+            '<div class="go-compass-stage">' +
+              '<div class="go-rose" id="goRose">' +
+                '<div class="go-cmap" id="goCmap"></div>' +
+                '<svg class="go-ticks" viewBox="0 0 200 200" aria-hidden="true"></svg>' +
+                '<div class="go-labs" id="goLabs"></div>' +
+              '</div>' +
+              '<div class="go-arrow" id="goArrow">' + ARROW_SVG + '</div>' +
+            '</div>' +
+            '<div class="go-cal">' +
+              '<div class="go-cal-ring" id="goCalRing" aria-hidden="true"><i id="goCalFill"></i></div>' +
+              '<div class="go-cal-copy">' +
+                '<b id="goCalTitle">CALIBRATE</b>' +
+                '<i id="goCalHint">Wave in a figure-8 to settle magnetic heading.</i>' +
+              '</div>' +
+              '<button type="button" id="goCalibrate">CALIBRATE</button>' +
+            '</div>' +
+            '<div class="tpop-cta go-compass-tools">' +
+              '<button type="button" data-cmode="rose">ROSE</button>' +
+              '<button type="button" class="hash" data-cmode="map">MAP</button>' +
+              '<button type="button" data-cmode="immersive">IMMERSE</button>' +
+            '</div>' +
           '</div>';
         document.body.appendChild(wrap);
         this.drawTicks(wrap.querySelector('.go-ticks'), wrap.querySelector('#goLabs'));
@@ -82,16 +100,60 @@
           Sound.click();
           self.hide();
         });
+        wrap.addEventListener('click', function (ev) {
+          if (ev.target === wrap) self.hide();
+        });
+        var calBtn = wrap.querySelector('#goCalibrate');
+        if (calBtn) calBtn.addEventListener('click', function () { self.calibrate(); });
       }
       this.els.wrap = wrap;
       this.els.rose = wrap.querySelector('#goRose');
       this.els.arrow = wrap.querySelector('#goArrow');
       this.els.head = wrap.querySelector('#goHead');
       this.els.card = wrap.querySelector('#goCard');
+      this.els.rank = wrap.querySelector('#goRank');
+      this.els.live = wrap.querySelector('#goLive');
       this.els.alt = wrap.querySelector('#goAlt');
       this.els.acc = wrap.querySelector('#goAcc');
       this.els.cmap = wrap.querySelector('#goCmap');
       this.els.labs = wrap.querySelectorAll('#goLabs span');
+      this.els.calFill = wrap.querySelector('#goCalFill');
+      this.els.calTitle = wrap.querySelector('#goCalTitle');
+      this.els.calHint = wrap.querySelector('#goCalHint');
+      this.bindTriggers();
+    },
+
+    bindTriggers: function () {
+      if (this._bound) return;
+      this._bound = true;
+      var self = this;
+      document.addEventListener('click', function (e) {
+        var t = e.target.closest && e.target.closest('#compassFab, #pwaCompassBtn, #terraGpsCompass, .compass-fab');
+        if (!t) return;
+        if (t.closest && t.closest('#goCompass')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        self.show();
+      }, true);
+    },
+
+    calibrate: function () {
+      var self = this;
+      this._samples = [];
+      this.calScore = 0;
+      function go() {
+        self.startSensors();
+        self.paint();
+        Notify.toast({ tone: 'blue', title: 'Calibrating', sub: 'Sweep a slow figure-8 until the ring locks.', n: '8' });
+      }
+      if (typeof DeviceOrientationEvent !== 'undefined' && DeviceOrientationEvent.requestPermission) {
+        DeviceOrientationEvent.requestPermission().then(function (s) {
+          if (s === 'granted') go();
+          else Notify.toast({ tone: 'amber', title: 'Motion blocked', sub: 'Allow motion access to calibrate heading.', n: '!' });
+        }).catch(go);
+      } else {
+        go();
+      }
     },
 
     drawTicks: function (svg, labs) {
@@ -203,12 +265,22 @@
         }
       }
       var shown = Math.round(h);
-      this.els.head.textContent = ('00' + shown).slice(-3) + '°';
-      this.els.card.textContent = this.cardFrom(h);
-      this.els.alt.textContent = this.alt != null && isFinite(this.alt) ? ('ELE ' + Math.round(this.alt) + ' m') : 'ELE —';
-      this.els.acc.textContent = this.gpsOk
-        ? ('GPS ±' + (this.acc != null ? Math.round(this.acc) : '?') + ' m')
-        : 'GPS …';
+      var card = this.cardFrom(h);
+      if (this.els.head) this.els.head.textContent = ('00' + shown).slice(-3) + '°';
+      if (this.els.card) this.els.card.textContent = card;
+      if (this.els.rank) this.els.rank.textContent = card.charAt(0);
+      if (this.els.alt) this.els.alt.textContent = this.alt != null && isFinite(this.alt) ? (Math.round(this.alt) + 'm') : '—';
+      if (this.els.acc) this.els.acc.textContent = this.gpsOk
+        ? ('±' + (this.acc != null ? Math.round(this.acc) : '?') + 'm')
+        : '…';
+      if (this.els.live) this.els.live.textContent = this.gpsOk ? 'LIVE' : 'SEEK';
+      var score = this.calScore || 0;
+      if (this.els.calFill) this.els.calFill.style.transform = 'scale(' + Math.max(0.12, score) + ')';
+      if (this.els.calTitle) this.els.calTitle.textContent = score > 0.85 ? 'LOCKED' : (score > 0.4 ? 'SETTLING' : 'CALIBRATE');
+      if (this.els.calHint) this.els.calHint.textContent = score > 0.85
+        ? 'Heading is stable. Rose, Map and Immerse are live.'
+        : 'Wave in a figure-8 to settle magnetic heading.';
+      if (this.els.wrap) this.els.wrap.classList.toggle('cal-lock', score > 0.85);
       var delta = Math.abs(((this.heading - this.targetBearing + 540) % 360) - 180);
       var tone = !this.gpsOk ? 'red' : (delta < 12 ? 'green' : (delta < 40 ? 'blue' : 'red'));
       this.els.arrow.className = 'go-arrow glow-' + tone;
@@ -224,6 +296,18 @@
       else if (typeof e.alpha === 'number' && !this._absBound) h = (360 - e.alpha) % 360;
       if (h == null || isNaN(h)) return;
       this.heading += ((h - this.heading + 540) % 360 - 180) * 0.28;
+      if (!this._samples) this._samples = [];
+      this._samples.push(((this.heading % 360) + 360) % 360);
+      if (this._samples.length > 20) this._samples.shift();
+      if (this._samples.length > 4) {
+        var sin = 0, cos = 0, i;
+        for (i = 0; i < this._samples.length; i++) {
+          var r = this._samples[i] * Math.PI / 180;
+          sin += Math.sin(r); cos += Math.cos(r);
+        }
+        var mag = Math.sqrt(sin * sin + cos * cos) / this._samples.length;
+        this.calScore = Math.max(0, Math.min(1, (mag - 0.55) / 0.45));
+      }
       this.paint();
     },
 
@@ -298,7 +382,6 @@
       this.startSensors();
       this.paint();
       Sound.success();
-      Notify.toast({ tone: 'blue', title: 'Compass live', sub: 'True heading, GPS elevation and calibrations are on.', n: 'N' });
     },
 
     hide: function () {

@@ -299,6 +299,8 @@ document.addEventListener('pointerover', function(e){
   var dotsEl  = document.getElementById('uxDots');
   var prevCard= document.getElementById('uxPrevCard');
   var nextCard= document.getElementById('uxNextCard');
+  var prevCardPwa = document.getElementById('uxPrevCardPwa');
+  var nextCardPwa = document.getElementById('uxNextCardPwa');
   var toast   = document.getElementById('uxToast');
   var closeBtn= document.getElementById('uxClose');
   var closePwa= document.getElementById('uxClosePwa');
@@ -469,6 +471,8 @@ document.addEventListener('pointerover', function(e){
   if (pagerDown) pagerDown.addEventListener('click', function(){ shiftTag(1); });
   if (prevCard) prevCard.addEventListener('click', function(){ cycleCard(-1); });
   if (nextCard) nextCard.addEventListener('click', function(){ cycleCard(1); });
+  if (prevCardPwa) prevCardPwa.addEventListener('click', function(){ cycleCard(-1); });
+  if (nextCardPwa) nextCardPwa.addEventListener('click', function(){ cycleCard(1); });
 
   elRows.addEventListener('click', function(ev){
     var t = ev.target.closest('.uxtoggle');

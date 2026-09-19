@@ -132,14 +132,24 @@
   spin.add(new THREE.Mesh(new THREE.SphereGeometry(R*1.15, 32, 32), fres));
 
   var lw=0, lh=0;
+  function frameCam(){
+    var aspect = camera.aspect || 1;
+    var fov = camera.fov * Math.PI / 180;
+    var pad = 2.28;
+    var dist = pad / Math.tan(fov / 2);
+    camera.position.z = aspect < 0.92 ? dist / Math.max(0.72, aspect) : dist;
+    camera.position.y = 0.1;
+  }
   function sync(){
     var w = mount.clientWidth, h = mount.clientHeight;
     if(w>0 && h>0 && (w!==lw || h!==lh)){
       lw=w; lh=h;
       renderer.setSize(w,h,false);
       camera.aspect = w/h; camera.updateProjectionMatrix();
+      frameCam();
     }
   }
+  frameCam();
   window.__spin = spin;
   var pwaGlobe = window.GOO && GOO.Device && (GOO.Device.embed || GOO.Device.fromPwa);
   var spinRate = pwaGlobe ? 0.0044 : 0.0019;

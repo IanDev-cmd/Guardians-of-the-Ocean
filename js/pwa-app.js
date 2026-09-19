@@ -71,9 +71,9 @@
     iframe.src = 'about:blank';
   });
   var pwaComp = document.getElementById('pwaCompassBtn');
-  if (pwaComp) pwaComp.addEventListener('click', function(){
-    if (Compass) Compass.show('immersive');
-  });
+      if (pwaComp) pwaComp.addEventListener('click', function(){
+        if (Compass) Compass.show();
+      });
 
   function bindPay(){
     var payEmail = document.getElementById('pwaPayEmail');

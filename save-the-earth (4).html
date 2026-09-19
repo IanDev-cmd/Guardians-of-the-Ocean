@@ -425,7 +425,7 @@ button.uxrow{
 .globe-wrap{
   position:absolute; z-index:2;
   left:50%; top:50%;
-  width:min(100vmin, 100vw, 100vh);
+  width:min(100vmin, 100svw, 100svh);
   aspect-ratio:1/1;
   contain:layout size;
   background:radial-gradient(circle at 42% 36%, #9ad8f4 0%, #1e86c4 44%, #0b4f88 71%, transparent 72.5%);
@@ -442,7 +442,7 @@ button.uxrow{
 }
 .app.globe-focus .globe-wrap{
   left:50%; top:50%;
-  width:min(100vmin, 100vw, 100vh);
+  width:min(100vmin, 100svw, 100svh);
   z-index:7;
 }
 /* glass bubble shell ~1.13x and the faint outer ring ~1.35x */
@@ -1191,7 +1191,14 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
     z-index:16;
     justify-content:flex-start;
   }
-  html.embed .gctrl .compass-fab{ display:none !important; }
+  html.embed .gctrl .compass-fab{
+    display:flex !important;
+    position:fixed;
+    left:var(--pwa-gutter);
+    bottom:calc(15.1vh + 52px);
+    width:var(--pwa-hit); height:var(--pwa-hit);
+    border-radius:50%;
+  }
   html.embed .gctrl button{ width:var(--pwa-hit); height:var(--pwa-hit); }
   html.embed .glayers,
   html.embed .app.globe-focus .glayers{
@@ -1204,6 +1211,11 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
     right:var(--pwa-gutter);
     width:auto;
     top:calc(var(--pwa-top) + (var(--pwa-hit) + var(--pwa-gap)) * 2 + 8px);
+  }
+  html.embed .globe-wrap,
+  html.embed .app.globe-focus .globe-wrap{
+    width:min(100vmin, 100svw, calc(100dvh - 18vh));
+    top:46%;
   }
   html.embed .uxmodal{
     align-items:flex-start;
@@ -1219,8 +1231,25 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   html.embed .uxcard-right,
   html.embed .uxcard-pager,
   html.embed .uxhero-arrow,
-  html.embed .uxcard-menu,
+  html.embed .uxcard-menu{ display:none !important; }
   html.embed .uxcard-bottom{ display:none !important; }
+  html.embed .ux-map-dock{ display:flex !important; flex-direction:column; gap:10px; margin-top:14px; }
+  html.embed .ux-map-nav{ display:flex; gap:6px; }
+  html.embed .ux-map-chip{
+    flex:1; border:none; background:#efefed; color:#0d0f0c;
+    font:700 10px/1 'Space Grotesk',sans-serif; letter-spacing:.06em;
+    padding:10px 0; border-radius:10px; cursor:pointer;
+  }
+  html.embed .ux-map-actions{ display:flex; gap:6px; }
+  html.embed .ux-map-actions .uxaction{
+    flex:1; flex-direction:row; justify-content:center; gap:6px;
+    padding:10px 0; font-size:10px; border-radius:10px; min-height:44px;
+  }
+  html.embed .ux-map-actions .uxaction svg{ width:14px; height:14px; }
+  html.embed .uxtoast{
+    position:fixed; left:50%; bottom:18px; transform:translate(-50%, 8px);
+    font-size:12px; padding:8px 12px; border-radius:10px;
+  }
   html.embed .uxclose-pwa{
     display:flex !important;
     position:absolute;
@@ -1278,6 +1307,26 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   html.embed .ux-ledger-card li i{ font-style:normal; color:#6b7268; font-size:11px; font-weight:500; }
   html.embed .ux-ledger-card li b{ font:700 13px/1 'Space Grotesk',sans-serif; white-space:nowrap; }
 }
+
+html.embed .uxcard-right,
+html.embed .uxcard-pager,
+html.embed .uxhero-arrow,
+html.embed .uxcard-menu,
+html.embed .uxcard-bottom{ display:none !important; }
+html.embed .ux-map-dock{ display:flex !important; flex-direction:column; gap:10px; margin-top:14px; }
+html.embed .ux-map-nav{ display:flex; gap:6px; }
+html.embed .ux-map-chip{
+  flex:1; border:none; background:#efefed; color:#0d0f0c;
+  font:700 10px/1 'Space Grotesk',sans-serif; letter-spacing:.06em;
+  padding:10px 0; border-radius:10px; cursor:pointer;
+}
+html.embed .ux-map-actions{ display:flex; gap:6px; }
+html.embed .ux-map-actions .uxaction{
+  flex:1; flex-direction:row; justify-content:center; gap:6px;
+  padding:10px 0; font-size:10px; border-radius:10px; min-height:44px;
+}
+html.embed .ux-map-actions .uxaction svg{ width:14px; height:14px; }
+html.embed .uxclose-pwa{ display:flex !important; }
 </style>
 </head>
 <body>
@@ -1381,7 +1430,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   </div>
 
   <div class="hero" id="hero">
-    <h1>Save the<br>earth</h1>
+    <h1>Save the<br>Earth</h1>
     <p>More than an acre of rain&nbsp;forest is lost every&nbsp;second. From global warming to the extinction of plant and animal species, the consequences of deforestation are far reaching.</p>
   </div>
 
@@ -1434,6 +1483,26 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
       <div class="ux-ledger-btns" id="uxLedgerBtns" hidden>
         <button class="ux-checkout" type="button" data-ledger="summary">Ledger Summary</button>
         <button class="ux-checkout ux-checkout-ghost" type="button" data-ledger="history">View Ledger History</button>
+      </div>
+      <div class="ux-map-dock" id="uxMapDock">
+        <div class="ux-map-nav">
+          <button type="button" class="ux-map-chip" id="uxPrevCardPwa">PREV</button>
+          <button type="button" class="ux-map-chip" id="uxNextCardPwa">NEXT</button>
+        </div>
+        <div class="ux-map-actions">
+          <button class="uxaction" type="button" data-act="preview">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            PREVIEW
+          </button>
+          <button class="uxaction" type="button" data-act="download">
+            <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 21h16"/></svg>
+            DOWNLOAD
+          </button>
+          <button class="uxaction" type="button" data-act="share">
+            <svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"/></svg>
+            SHARE
+          </button>
+        </div>
       </div>
       <div class="uxcard-bottom">
         <button class="uxpill" type="button" id="uxPill">
