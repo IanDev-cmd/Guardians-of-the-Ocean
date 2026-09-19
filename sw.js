@@ -1,4 +1,4 @@
-const CACHE_NAME = 'guardians-ocean-v22';
+const CACHE_NAME = 'guardians-ocean-v23';
 const ASSETS = [
   './',
   './index.html',
@@ -131,7 +131,9 @@ self.addEventListener('message', (event) => {
       icon: it.icon || './pwa/island-weather-pwa/icons/icon-192.png',
       badge: './pwa/island-weather-pwa/icons/icon-192.png',
       tag: it.tag || 'goo-news',
-      data: { url: it.url || './pwa/island-weather-pwa/index.html' }
+      data: { url: it.url || './pwa/island-weather-pwa/index.html' },
+      vibrate: [120, 80, 120],
+      renotify: true
     })
   );
 });

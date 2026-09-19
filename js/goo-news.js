@@ -208,13 +208,15 @@
   }
 
   function canPush() {
+    if (typeof Notification === 'undefined') return false;
     if (typeof document === 'undefined') {
       return typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     }
     var d = root.GOO && root.GOO.Device;
     if (d && d.embed) return false;
     if (document.body && document.body.getAttribute('data-shell') === 'pwa') return true;
-    return !!(d && (d.pwaShell || d.standalone));
+    if (d && (d.pwaShell || d.standalone)) return true;
+    return !!(d && d.mobile);
   }
 
   function iconBase() {
@@ -234,13 +236,15 @@
           badge: badge,
           tag: 'goo-news-' + it.id.slice(-40),
           data: { url: it.url },
-          timestamp: it.at || Date.now()
+          timestamp: it.at || Date.now(),
+          vibrate: [120, 80, 120],
+          renotify: true
         });
       })).then(function () { return fresh.length; });
     }
     if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
       return navigator.serviceWorker.ready.then(viaReg).catch(function () {
-        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return 0;
+        if (Notification.permission !== 'granted') return 0;
         fresh.forEach(function (it) {
           try { new Notification(it.title, { body: it.source + ' · ' + labelOf(it.cat), icon: it.icon || badge }); } catch (e) {}
         });
@@ -308,7 +312,7 @@
         var header = Notify.panel.querySelector('header');
         if (header) header.textContent = 'Coastal news';
       }
-      News.poll({ toast: true, push: canPush() });
+      News.poll({ toast: true, push: canPush() && typeof Notification !== 'undefined' && Notification.permission === 'granted' });
       setInterval(function () { News.poll({ push: canPush() }); }, 12 * 60 * 1000);
       if (navigator.serviceWorker) {
         navigator.serviceWorker.addEventListener('message', function (ev) {
@@ -316,21 +320,63 @@
         });
       }
       if (canPush()) {
-        function askPush() {
-          if (typeof Notification === 'undefined' || Notification.permission !== 'default') return;
-          Notification.requestPermission().then(function (p) {
-            if (p === 'granted') News.poll({ push: true });
-          });
-        }
-        document.addEventListener('pointerdown', askPush, { once: true, passive: true });
+        setTimeout(function () { News.prompt(); }, 700);
         navigator.serviceWorker && navigator.serviceWorker.ready.then(function (reg) {
           if (reg.periodicSync && reg.periodicSync.register) {
             reg.periodicSync.register('goo-news', { minInterval: 60 * 60 * 1000 }).catch(function () {});
           }
         }).catch(function () {});
       }
+    },
+    prompt: function () {
+      if (typeof document === 'undefined' || typeof Notification === 'undefined') return;
+      if (!canPush()) return;
+      if (Notification.permission === 'granted') {
+        hidePrompt();
+        return;
+      }
+      if (Notification.permission === 'denied') return;
+      if (document.getElementById('nPrompt')) return;
+      try {
+        var until = +localStorage.getItem('goo-news-prompt-later');
+        if (until && until > Date.now()) return;
+      } catch (e) {}
+      var wrap = document.createElement('div');
+      wrap.id = 'nPrompt';
+      wrap.className = 'n-prompt';
+      wrap.innerHTML =
+        '<article class="n-prompt-card">' +
+          '<div class="tpop-h">' +
+            '<span class="tpop-rank">!</span>' +
+            '<div><b>ALLOW NEWS ALERTS</b><i>Coastal cities · oceans · research</i></div>' +
+          '</div>' +
+          '<p>Turn on notifications so live headlines appear in your phone shade — not only inside the app.</p>' +
+          '<div class="tpop-cta">' +
+            '<button type="button" class="pow" id="nPromptYes">ALLOW</button>' +
+            '<button type="button" class="hash" id="nPromptLater">NOT NOW</button>' +
+          '</div>' +
+        '</article>';
+      document.body.appendChild(wrap);
+      wrap.querySelector('#nPromptYes').addEventListener('click', function () {
+        Notification.requestPermission().then(function (p) {
+          hidePrompt();
+          if (p === 'granted') {
+            try { localStorage.removeItem('goo-news-prompt-later'); } catch (err) {}
+            News.poll({ push: true, toast: true });
+          }
+        });
+      });
+      wrap.querySelector('#nPromptLater').addEventListener('click', function () {
+        try { localStorage.setItem('goo-news-prompt-later', String(Date.now() + 3 * 24 * 60 * 60 * 1000)); } catch (err) {}
+        hidePrompt();
+      });
     }
   };
+
+  function hidePrompt() {
+    var el = document.getElementById('nPrompt');
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
 
   if (typeof self !== 'undefined') self.GOONews = News;
   root.GOO = root.GOO || {};

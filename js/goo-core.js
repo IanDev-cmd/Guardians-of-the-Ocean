@@ -122,6 +122,14 @@
       } else this.badge.hidden = true;
     },
     requestNative: function () {
+      if (root.GOO.News && root.GOO.News.prompt) {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          root.GOO.News.poll({ push: true });
+          return;
+        }
+        root.GOO.News.prompt();
+        return;
+      }
       if (this.askedNative || !('Notification' in window) || Notification.permission !== 'default') return;
       this.askedNative = true;
       Notification.requestPermission().then(function (p) {
