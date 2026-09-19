@@ -146,7 +146,7 @@ html, body, a, button, .card{ cursor:none; }
 }
 .rail .socials{
   position:relative; left:auto; bottom:auto; top:auto; transform:none;
-  margin:0;
+  margin:10px 0 0;
   display:flex; flex-direction:column; align-items:center; gap:var(--rail-gap);
 }
 .rail .socials a{
@@ -187,20 +187,20 @@ html, body, a, button, .card{ cursor:none; }
   fill:none; stroke:#fff; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
 }
 
-/* the popup that slides out beside a sidebar icon, styled after the
-   original watch-video button: white plate, label, colored icon chip */
+/* Watch Video tag-out: blue bar, uppercase label, square color chip */
 .icon-tip{
   position:absolute; left:100%; top:50%; z-index:30;
-  margin-left:10px;
+  margin-left:12px;
   display:flex; align-items:center; justify-content:space-between;
-  gap:8px; height:var(--rail-hit); min-height:var(--rail-hit);
-  background:#fdfdfd;
-  padding:0 8px 0 12px;
-  border-radius:0;
+  gap:16px; height:42px; min-height:42px;
+  background:#1a66cc;
+  padding:4px 4px 4px 16px;
+  border-radius:3px;
   white-space:nowrap; pointer-events:none;
-  font-family:inherit; font-size:12px; font-weight:700;
-  letter-spacing:.04em; color:#1a2733;
-  box-shadow:0 8px 20px rgba(0,16,40,.24);
+  font-family:'Space Grotesk', inherit;
+  font-size:13px; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase; color:#fff;
+  box-shadow:0 10px 24px rgba(0,16,40,.28);
   opacity:0;
   transform:translate(-8px,-50%);
   transition:opacity .28s ease, transform .32s cubic-bezier(.22,.9,.28,1);
@@ -210,18 +210,19 @@ html, body, a, button, .card{ cursor:none; }
   opacity:1; transform:translate(0,-50%); pointer-events:auto;
 }
 .tip-ico{
-  width:var(--rail-hit); height:var(--rail-hit); min-width:var(--rail-hit); min-height:var(--rail-hit);
+  width:34px; height:34px; min-width:34px; min-height:34px;
   flex:0 0 auto; display:flex; align-items:center; justify-content:center;
-  border-radius:0;
+  border-radius:2px;
 }
 .tip-ico svg{
-  width:var(--rail-glyph); height:var(--rail-glyph); min-width:0; min-height:0; display:block;
-  fill:none; stroke:#fff; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
+  width:18px; height:18px; min-width:0; min-height:0; display:block;
+  fill:none; stroke:#fff; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;
 }
 @media (max-width:760px){
-  .icon-tip{ font-size:12px; height:var(--rail-hit); padding:0 8px 0 12px; border-radius:0; }
-  .icon-btn, .icon-wrap, .rail .socials a, .rail .logo, .tip-ico{ width:var(--rail-hit); height:var(--rail-hit); }
-  .icon-btn svg, .rail .logo svg, .rail .socials svg, .tip-ico svg{ width:var(--rail-glyph); height:var(--rail-glyph); }
+  .icon-tip{ font-size:12px; height:38px; min-height:38px; padding:3px 3px 3px 14px; }
+  .tip-ico{ width:32px; height:32px; min-width:32px; min-height:32px; }
+  .icon-btn, .icon-wrap, .rail .socials a, .rail .logo{ width:var(--rail-hit); height:var(--rail-hit); }
+  .icon-btn svg, .rail .logo svg, .rail .socials svg{ width:var(--rail-glyph); height:var(--rail-glyph); }
 }
 
 /* ------------------------------------------------------ floating ux card */
@@ -307,6 +308,34 @@ button.uxrow{
 .uxtoggle.on{ background:#1f9254; }
 .uxtoggle.on::after{ transform:translateX(1.1vw); }
 
+.ux-checkout-wrap{
+  display:none; flex-direction:column; gap:.55vw; margin:1.1vw 0 0; padding-top:.2vw;
+}
+.ux-checkout-wrap.show{ display:flex; }
+.ux-checkout-email{ display:flex; flex-direction:column; gap:.28vw; }
+.ux-checkout-email span{
+  font-size:clamp(11px, .75vw, 13px); font-weight:700; letter-spacing:.06em; color:#8b939b;
+}
+.ux-checkout-email input{
+  height:clamp(40px, 2.6vw, 46px); border:1px solid #e4e4e4; background:#f7f7f6;
+  padding:0 12px; font:700 14px/1 'Space Grotesk', system-ui, sans-serif; color:#12181f;
+  border-radius:10px;
+}
+.ux-checkout{
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  min-height:clamp(44px, 3vw, 52px); border:none; border-radius:10px; cursor:pointer;
+  background:#16a34a; color:#fff; font:700 15px/1 'Space Grotesk', system-ui, sans-serif;
+  letter-spacing:.04em;
+}
+.ux-checkout:hover{ filter:brightness(.96); }
+.ux-checkout:disabled{ opacity:.7; cursor:wait; }
+.ux-checkout-spin{
+  width:16px; height:16px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff;
+  border-radius:50%; animation:uxspin .7s linear infinite; display:none;
+}
+.ux-checkout.is-loading .ux-checkout-spin{ display:block; }
+@keyframes uxspin { to { transform: rotate(360deg); } }
+
 .uxcard-bottom{ display:flex; align-items:center; gap:.5vw; margin-top:auto; padding-top:1.4vw; flex-wrap:wrap; }
 .uxpill{ flex:1 1 auto; display:flex; align-items:center; gap:.5vw; background:#e8e8e6; border:none; padding:.7vw 1vw; font-size:clamp(12px, .85vw, 15px); font-weight:700; color:#1a2733; font-family:inherit; min-width:7vw; border-radius:10px; }
 .uxpill svg{ width:.68vw; height:.68vw; min-width:10px; min-height:10px; stroke:#1a2733; fill:none; stroke-width:2; }
@@ -383,8 +412,8 @@ button.uxrow{
 
 /* ------------------------------------------------------------------ nav */
 .nav{
-  position:absolute; top:4.0%; right:4.7%; z-index:8;
-  display:flex; gap:1.6vw;
+  position:absolute; top:22px; right:76px; z-index:8;
+  display:flex; align-items:center; gap:18px;
   font-size:var(--t-nav); font-weight:700; letter-spacing:.03em; color:#e2f2fd;
   transition:opacity .28s ease;
 }
@@ -395,10 +424,12 @@ button.uxrow{
    detail: centre 79%   / 77%,   diameter 78%   of frame width          */
 .globe-wrap{
   position:absolute; z-index:2;
-  left:34.4%; top:calc(52.4% - 16.1vw); width:32.2%; aspect-ratio:1/1;
+  left:50%; top:50%;
+  width:min(100vmin, 100vw, 100vh);
+  aspect-ratio:1/1;
   contain:layout size;
   background:radial-gradient(circle at 42% 36%, #9ad8f4 0%, #1e86c4 44%, #0b4f88 71%, transparent 72.5%);
-  transform:scale(var(--gmul, 1));
+  transform:translate(-50%, -50%) scale(var(--gmul, 1));
   transform-origin:50% 50%;
   transition:left 1s cubic-bezier(.42,0,.2,1),
              top  1s cubic-bezier(.42,0,.2,1),
@@ -407,10 +438,11 @@ button.uxrow{
 }
 .globe-wrap.globe-live{ background:none; }
 .app.detail .globe-wrap{
-  left:40%; top:calc(77% - 39vw); width:78%;
+  left:72%; top:78%; width:min(86vmin, 82%);
 }
 .app.globe-focus .globe-wrap{
-  left:19%; top:calc(50% - 31vw); width:62%;
+  left:50%; top:50%;
+  width:min(100vmin, 100vw, 100vh);
   z-index:7;
 }
 /* glass bubble shell ~1.13x and the faint outer ring ~1.35x */
@@ -429,7 +461,7 @@ button.uxrow{
   border:1px solid rgba(255,255,255,.085);
 }
 .globe{
-  position:absolute; inset:-20%; border-radius:50%;
+  position:absolute; inset:0; border-radius:50%;
   /* the reference earth is luminous, not photographic-dark */
   filter:saturate(1.12) brightness(1.04) drop-shadow(0 0 3vw rgba(120,215,255,.42));
   transform:scale(var(--gscale,1));
@@ -460,7 +492,9 @@ button.uxrow{
 .app.detail .pin{ opacity:1; }
 
 .globe-pins{
-  position:absolute; inset:0; z-index:5; pointer-events:none; overflow:visible;
+  position:absolute; inset:0; z-index:5; pointer-events:none;
+  overflow:hidden; border-radius:50%;
+  clip-path: circle(var(--pin-clip, 45%) at 50% 50%);
 }
 .gpin{
   position:absolute; left:0; top:0; z-index:5;
@@ -483,6 +517,7 @@ button.uxrow{
   text-shadow:0 1px 4px rgba(0,20,40,.65);
   background:rgba(6,22,38,.55); padding:3px 7px;
 }
+.gpin.gpin-left span{ left:auto; right:10px; }
 .gpin.front{ pointer-events:auto; }
 .gpin.crit i{ background:#ff6b4a; box-shadow:0 0 0 3px rgba(255,107,74,.28), 0 0 14px rgba(255,107,74,.8); }
 .gpin.elev i{ background:#ffc14a; box-shadow:0 0 0 3px rgba(255,193,74,.28), 0 0 14px rgba(255,193,74,.8); }
@@ -540,6 +575,11 @@ button.uxrow{
   box-shadow:0 8px 20px rgba(0,16,40,.22);
 }
 .gctrl button svg{ width:var(--rail-glyph); height:var(--rail-glyph); stroke:#12202c; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.gctrl .compass-fab{
+  position:relative; left:auto; bottom:auto; top:auto;
+  width:var(--hud); height:var(--hud); border-radius:50%;
+}
+.gctrl .compass-fab svg polygon{ fill:#12202c; stroke:none; }
 .gctrl button:active{ transform:scale(.94); }
 .glayers{
   position:fixed; left:calc(var(--dock-left) + var(--hud) + 8px); top:auto; bottom:calc(var(--dock-bottom) + var(--hud) + 8px); z-index:17;
@@ -614,6 +654,52 @@ button.uxrow{
   position:absolute; left:0; width:2px; height:22%;
   background:rgba(255,255,255,.88);
   will-change:transform;
+}
+
+/* PWA / embed: same-size photo cards as a bottom horizontal strip */
+html.embed .list,
+html.from-pwa .list,
+html.mobile .list{
+  left:0; right:0; width:100%;
+  top:auto; bottom:0;
+  height:calc(15.1vh + 36px);
+  padding:6px 12px 22px;
+  z-index:8;
+  -webkit-mask-image:linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%);
+          mask-image:linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%);
+  touch-action:pan-x;
+}
+html.embed .track,
+html.from-pwa .track,
+html.mobile .track{
+  display:flex; flex-direction:row; align-items:stretch;
+  position:relative; left:0; top:0; height:15.1vh; width:max-content;
+}
+html.embed .card,
+html.from-pwa .card,
+html.mobile .card{
+  flex:0 0 auto;
+  margin-bottom:0;
+}
+html.embed .scrollbar,
+html.from-pwa .scrollbar,
+html.mobile .scrollbar{
+  left:14%; right:14%; width:auto;
+  top:auto; bottom:8px; height:2px;
+}
+html.embed .scrollbar i,
+html.from-pwa .scrollbar i,
+html.mobile .scrollbar i{
+  width:22%; height:2px;
+}
+
+html.embed .gctrl,
+html.from-pwa .gctrl,
+html.mobile .gctrl,
+html.embed .app.globe-focus .gctrl,
+html.from-pwa .app.globe-focus .gctrl,
+html.mobile .app.globe-focus .gctrl{
+  bottom:calc(15.1vh + 44px);
 }
 
 /* ---------------------------------------------------------- detail view */
@@ -909,7 +995,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   background:#d5e6db; border-radius:99px; pointer-events:none; z-index:0;
 }
 .rm-tl-fill{
-  position:absolute; left:8.333%; top:var(--track-y); height:3px; width:16.667%;
+  position:absolute; left:8.333%; top:var(--track-y); height:3px; width:0;
   transform:translateY(-50%);
   background:#14532d; border-radius:99px; pointer-events:none; z-index:0;
 }
@@ -929,9 +1015,12 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   font-size:9px; font-weight:700; box-sizing:border-box;
 }
 .rm-tl-step .dot svg{ width:10px; height:10px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.rm-tl-step:hover .dot,
+.rm-tl-step:focus-visible .dot{ box-shadow:0 0 0 3px rgba(20,83,45,.16); }
 .rm-tl-step.on .dot,
 .rm-tl-step.start .dot,
 .rm-tl-step.done .dot{ background:#14532d; color:#fff; }
+.rm-tl-step.on .lab{ color:#14532d; }
 .rm-tl-step.now .dot{
   background:#fff; color:#14532d; box-shadow:0 0 0 3px rgba(20,83,45,.16);
 }
@@ -950,6 +1039,14 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
 }
 .rm-tl-flag.early{ left:25%; color:#14532d; }
 .rm-tl-flag.late{ left:75%; color:#c43c2b; }
+.rm-tl-flag:hover .mark,
+.rm-tl-flag:focus-visible .mark{ transform:scale(1.12); }
+.rm-tl-flag.on .mark{
+  width:16px; height:16px; background:currentColor; border-radius:50%;
+}
+.rm-tl-flag.on .mark svg{ fill:#fff; }
+.rm-tl-flag.early.on .lab{ color:#14532d; }
+.rm-tl-flag.late.on .lab{ color:#c43c2b; }
 .rm-tl-flag .stem{
   display:block; width:2px; height:10px; background:currentColor; border-radius:99px;
 }
@@ -1102,57 +1199,27 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
     <div class="icons" id="icons">
       <div class="icon-group">
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Receipt / File Proof" style="--ico:#e07a3f">
-            <svg viewBox="0 0 24 24"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
-          </button>
-          <div class="icon-tip" data-card="receipt">
-            <span>Receipt / File Proof</span>
-            <span class="tip-ico" style="background:#e07a3f"><svg viewBox="0 0 24 24"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
-          </div>
-        </div>
-        <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Milestone / Route" style="--ico:#7c5cff">
-            <svg viewBox="0 0 24 24"><polygon points="1 6 1 21 8 18 16 21 23 18 23 3 16 6 8 3 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg>
-          </button>
-          <div class="icon-tip" data-card="milestone">
-            <span>Milestone / Route</span>
-            <span class="tip-ico" style="background:#7c5cff"><svg viewBox="0 0 24 24"><polygon points="1 6 1 21 8 18 16 21 23 18 23 3 16 6 8 3 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg></span>
-          </div>
-        </div>
-        <div class="icon-wrap">
           <button class="icon-btn" type="button" aria-label="Wallet" style="--ico:#16a34a">
             <svg viewBox="0 0 24 24"><path d="M21 8H5a2 2 0 0 1 0-4h13v4"/><path d="M3 8v11a2 2 0 0 0 2 2h16v-6"/><path d="M17 13.5h4v3h-4a1.5 1.5 0 0 1 0-3Z"/></svg>
           </button>
           <div class="icon-tip" data-card="wallet">
             <span>Wallet</span>
-            <span class="tip-ico" style="background:#16a34a"><svg viewBox="0 0 24 24"><path d="M21 8H5a2 2 0 0 1 0-4h13v4"/><path d="M3 8v11a2 2 0 0 0 2 2h16v-6"/><path d="M17 13.5h4v3h-4a1.5 1.5 0 0 1 0-3Z"/></svg></span>
+            <span class="tip-ico" style="background:#e8922a"><svg viewBox="0 0 24 24"><path d="M21 8H5a2 2 0 0 1 0-4h13v4"/><path d="M3 8v11a2 2 0 0 0 2 2h16v-6"/><path d="M17 13.5h4v3h-4a1.5 1.5 0 0 1 0-3Z"/></svg></span>
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Handshake / Stipend" style="--ico:#d97706">
-            <svg viewBox="0 0 24 24"><path d="M2 12h4l3-3 3 3h2l3-3 3 3h2"/><path d="M9 12v3a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-3"/></svg>
+          <button class="icon-btn" type="button" aria-label="Milestone" style="--ico:#7c5cff">
+            <svg viewBox="0 0 24 24"><polygon points="1 6 1 21 8 18 16 21 23 18 23 3 16 6 8 3 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg>
           </button>
-          <div class="icon-tip" data-card="handshake">
-            <span>Handshake / Stipend</span>
-            <span class="tip-ico" style="background:#d97706"><svg viewBox="0 0 24 24"><path d="M2 12h4l3-3 3 3h2l3-3 3 3h2"/><path d="M9 12v3a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-3"/></svg></span>
-          </div>
-        </div>
-        <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="External Link / Hash" style="--ico:#0ea5a4">
-            <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
-          </button>
-          <div class="icon-tip" data-card="link">
-            <span>External Link / Hash</span>
-            <span class="tip-ico" style="background:#0ea5a4"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg></span>
+          <div class="icon-tip" data-card="milestone">
+            <span>Milestone</span>
+            <span class="tip-ico" style="background:#e8922a"><svg viewBox="0 0 24 24"><polygon points="1 6 1 21 8 18 16 21 23 18 23 3 16 6 8 3 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg></span>
           </div>
         </div>
       </div>
     </div>
 
     <div class="socials">
-      <a class="share-link" data-share="ig" target="_blank" rel="noopener" aria-label="Share on Instagram">
-        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2c2.7 0 3.1 0 4.1.1 1 .1 1.7.2 2.3.5.6.2 1.1.6 1.6 1.1.5.5.8.9 1.1 1.6.2.6.4 1.3.5 2.3.1 1 .1 1.4.1 4.1s0 3.1-.1 4.1c-.1 1-.2 1.7-.5 2.3a4.6 4.6 0 0 1-1.1 1.6 4.6 4.6 0 0 1-1.6 1.1c-.6.2-1.3.4-2.3.5-1 .1-1.4.1-4.1.1s-3.1 0-4.1-.1c-1-.1-1.7-.2-2.3-.5a4.6 4.6 0 0 1-1.6-1.1 4.6 4.6 0 0 1-1.1-1.6c-.2-.6-.4-1.3-.5-2.3C2 15.1 2 14.7 2 12s0-3.1.1-4.1c.1-1 .2-1.7.5-2.3.2-.6.6-1.1 1.1-1.6.5-.5.9-.8 1.6-1.1.6-.2 1.3-.4 2.3-.5C8.9 2 9.3 2 12 2Zm0 2.7c-2.6 0-2.9 0-4 .1-.8 0-1.3.2-1.6.3-.4.2-.7.3-1 .6-.3.3-.5.6-.6 1-.1.3-.3.8-.3 1.6-.1 1.1-.1 1.4-.1 4s0 2.9.1 4c0 .8.2 1.3.3 1.6.2.4.3.7.6 1 .3.3.6.5 1 .6.3.1.8.3 1.6.3 1.1.1 1.4.1 4 .1s2.9 0 4-.1c.8 0 1.3-.2 1.6-.3.4-.2.7-.3 1-.6.3-.3.5-.6.6-1 .1-.3.3-.8.3-1.6.1-1.1.1-1.4.1-4s0-2.9-.1-4c0-.8-.2-1.3-.3-1.6a2 2 0 0 0-.6-1 2 2 0 0 0-1-.6c-.3-.1-.8-.3-1.6-.3-1.1-.1-1.4-.1-4-.1Zm0 4.3a5 5 0 1 1 0 10 5 5 0 1 1 0-10Zm0 2.3a2.7 2.7 0 1 0 0 5.4 2.7 2.7 0 0 0 0-5.4Zm5.2-2.5a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4Z"/></svg>
-      </a>
       <a class="share-link" data-share="x" target="_blank" rel="noopener" aria-label="Share on X">
         <svg viewBox="0 0 24 24" fill="#fff"><path d="M22 5.9c-.7.3-1.5.6-2.3.7.8-.5 1.5-1.3 1.8-2.3-.8.5-1.7.8-2.6 1a4.1 4.1 0 0 0-7 3.7A11.6 11.6 0 0 1 3.4 4.6a4.1 4.1 0 0 0 1.3 5.5c-.6 0-1.3-.2-1.8-.5v.1c0 2 1.4 3.6 3.3 4a4.2 4.2 0 0 1-1.9.1 4.1 4.1 0 0 0 3.9 2.9A8.3 8.3 0 0 1 2 18.4a11.6 11.6 0 0 0 6.3 1.9c7.5 0 11.7-6.4 11.7-11.9v-.5c.8-.6 1.5-1.3 2-2Z"/></svg>
       </a>
@@ -1192,6 +1259,9 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
     <div class="search-hits" id="gsearchHits"></div>
   </div>
   <div class="gctrl" id="gctrl">
+    <button type="button" id="compassFab" class="compass-fab" aria-label="Open GPS compass">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+    </button>
     <button type="button" id="gPlus" aria-label="Larger globe">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
@@ -1246,6 +1316,16 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
       <hr class="uxcard-rule">
       <div class="uxcard-section" id="uxSection">Section</div>
       <div class="uxcard-rows" id="uxRows"></div>
+      <div class="ux-checkout-wrap" id="uxCheckoutWrap">
+        <label class="ux-checkout-email" for="uxCheckoutEmail">
+          <span>Donor email</span>
+          <input id="uxCheckoutEmail" type="email" autocomplete="email" placeholder="you@example.com">
+        </label>
+        <button class="ux-checkout" type="button" id="uxCheckout" aria-busy="false">
+          <span class="ux-checkout-spin" aria-hidden="true"></span>
+          <span class="ux-checkout-label">Checkout</span>
+        </button>
+      </div>
       <div class="uxcard-bottom">
         <button class="uxpill" type="button" id="uxPill">
           <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
@@ -1418,6 +1498,8 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   <div class="terra-toast" id="terraToast"></div>
 </div>
 
+<script src="js/goo-config.js"></script>
+<script src="js/goo-stripe.js" defer></script>
 <script src="js/boot.js" defer></script>
 <script src="js/goo-cards.js" defer></script>
 <script src="js/goo-map.js" defer></script>

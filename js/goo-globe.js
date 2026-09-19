@@ -16,7 +16,7 @@
   var R = 2;
   var scene  = new THREE.Scene();
   var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-  camera.position.set(0, 0.1, 7.3);
+  camera.position.set(0, 0.1, 5.85);
 
   var conn = navigator.connection || navigator.mozConnection || {};
   var saveData = !!conn.saveData || /2g/.test(conn.effectiveType || '');
@@ -211,16 +211,26 @@
     if(pinRoot){
       var w = mount.clientWidth, h = mount.clientHeight;
       var camN = camera.position.clone().normalize();
+      var dist = camera.position.length();
+      var fov = camera.fov * Math.PI / 180;
+      var rPx = (h / 2) * Math.tan(Math.asin(Math.min(0.999, R / dist))) / Math.tan(fov / 2);
+      pinRoot.style.setProperty('--pin-clip', ((rPx / Math.max(w, 1)) * 100).toFixed(2) + '%');
+      var r2 = rPx * rPx * 0.90;
+      var cx = w * 0.5, cy = h * 0.5;
       PIN_CITIES.forEach(function(c){
         if(!c.el) return;
         var world = latLonToVec(c.lat, c.lng, R).applyMatrix4(spin.matrixWorld);
-        var front = world.clone().normalize().dot(camN) > 0.18;
+        var facing = world.clone().normalize().dot(camN) > 0.22;
         var p = world.project(camera);
         var x = (p.x * 0.5 + 0.5) * w;
         var y = (-p.y * 0.5 + 0.5) * h;
+        var dx = x - cx, dy = y - cy;
+        var onGlobe = facing && p.z > -1 && p.z < 1 && (dx * dx + dy * dy) <= r2;
         c.el.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)';
-        c.el.style.opacity = front ? '1' : '0';
-        c.el.classList.toggle('front', front);
+        c.el.style.opacity = onGlobe ? '1' : '0';
+        c.el.classList.toggle('front', onGlobe);
+        c.el.classList.toggle('gpin-left', x > cx);
+        c.el.style.pointerEvents = onGlobe ? 'auto' : 'none';
       });
     }
     renderer.render(scene, camera);

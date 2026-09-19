@@ -1,6 +1,6 @@
 /* Guardians of the Ocean — shared chrome (install, compass, toasts, tutorial) */
 .n-bell{
-  position:fixed; top:18px; right:118px; z-index:40;
+  position:fixed; top:18px; right:20px; z-index:40;
   width:44px; height:44px; border:1px solid rgba(255,255,255,.45);
   background:rgba(255,255,255,.92); color:#12202c;
   display:flex; align-items:center; justify-content:center;
@@ -31,7 +31,9 @@ html.embed .n-bell, html.mobile .n-bell{ right:16px; top:max(12px, env(safe-area
   position:fixed; left:var(--dock-left, 12%); bottom:18%; z-index:45;
   display:flex; flex-direction:column; gap:8px; pointer-events:none;
 }
-html.mobile .n-stack, html.embed .n-stack{ left:12px; bottom:92px; }
+html.mobile .n-stack, html.embed .n-stack, html.from-pwa .n-stack{
+  left:12px; bottom:calc(15.1vh + 96px);
+}
 .n-toast{
   display:flex; align-items:center; gap:10px; min-width:220px; max-width:300px;
   background:#fdfdfd; padding:0 12px 0 14px; height:48px;
@@ -62,7 +64,7 @@ html.mobile .n-stack, html.embed .n-stack{ left:12px; bottom:92px; }
 .n-toast.tone-amber .n-ico{ background:#fbe8c4; }
 
 .install-app{
-  position:fixed; left:calc(var(--dock-left) + var(--hud) + 8px + (var(--hud) + 8px) * 3); bottom:var(--dock-bottom); z-index:16;
+  position:fixed; left:calc(var(--dock-left) + var(--hud) + 8px + (var(--hud) + 8px) * 4); bottom:var(--dock-bottom); z-index:16;
   display:flex; align-items:center; gap:10px; height:var(--hud); box-sizing:border-box;
   background:#f3f1ea; color:#1a1a1a; padding:0 14px 0 18px;
   border-radius:999px; box-shadow:0 10px 24px rgba(0,16,40,.22);
@@ -83,7 +85,12 @@ html.embed .install-app{ display:none; }
   display:flex; align-items:center; justify-content:center;
   box-shadow:0 8px 20px rgba(0,16,40,.22);
 }
-html.embed .compass-fab, html.mobile .compass-fab{ left:16px; bottom:max(24px, env(safe-area-inset-bottom)); width:46px; height:46px; }
+.gctrl .compass-fab,
+html.embed .gctrl .compass-fab,
+html.mobile .gctrl .compass-fab{
+  position:relative; left:auto; bottom:auto; top:auto; width:var(--hud); height:var(--hud);
+}
+html.embed .compass-fab:not(.gctrl .compass-fab), html.mobile .compass-fab:not(.gctrl .compass-fab){ left:16px; bottom:max(24px, env(safe-area-inset-bottom)); width:46px; height:46px; }
 .compass-fab svg{ width:var(--rail-glyph); height:var(--rail-glyph); }
 
 .go-compass{
@@ -189,9 +196,13 @@ body.tut-on .app{ filter:none; }
   padding:8px 12px; border-radius:999px; font:700 12px 'Space Grotesk',sans-serif;
 }
 
-html.embed .rail .icons,
-html.embed .rail-mid,
-html.embed .uxmodal,
+html.embed,
+html.from-pwa{
+  --rail-w:0px;
+  --dock-left:12px;
+}
+html.embed .rail,
+html.from-pwa .rail{ display:none !important; }
 html.embed .nav{ display:none !important; }
 html.embed .hero h1{ font-size:clamp(28px, 11vw, 64px); }
 html.mobile .gsearch{ width:min(440px, 72vw); }

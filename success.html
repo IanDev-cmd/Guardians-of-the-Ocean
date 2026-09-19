@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Payment confirmed · Guardians of the Ocean</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink:#12181f; --muted:#6b7268; --ok:#16a34a; --bg:#f4f6f3; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: var(--bg); color: var(--ink);
+    }
+    .card {
+      width: min(92vw, 480px); background: #fff; padding: 36px 32px 28px;
+      box-shadow: 0 24px 60px rgba(0,16,40,.12);
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    p { margin: 0 0 18px; color: var(--muted); line-height: 1.5; }
+    .status { font-weight: 700; letter-spacing: .06em; color: var(--ok); margin-bottom: 16px; }
+    .status.wait { color: #c07a12; }
+    .status.fail { color: #b42318; }
+    .spin {
+      width: 22px; height: 22px; border: 2px solid #d7e7d8; border-top-color: var(--ok);
+      border-radius: 50%; animation: spin .8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    dl { display: grid; grid-template-columns: 120px 1fr; gap: 8px 12px; margin: 0 0 24px; font-size: 14px; }
+    dt { color: var(--muted); font-weight: 700; }
+    dd { margin: 0; font-weight: 700; }
+    a.btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 48px; padding: 0 18px; background: var(--ok); color: #fff;
+      text-decoration: none; font-weight: 700; border-radius: 10px;
+    }
+    .note { font-size: 12px; color: var(--muted); margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="status wait" id="status"><span class="spin" id="spin"></span>Confirming payment…</div>
+    <h1>Thank you</h1>
+    <p id="copy">We are waiting for the Stripe webhook to mark this order paid. This page does not fulfill the order by itself.</p>
+    <dl id="summary" hidden>
+      <dt>Order</dt><dd id="orderId">—</dd>
+      <dt>Amount</dt><dd id="amount">—</dd>
+      <dt>Status</dt><dd id="paidStatus">pending</dd>
+    </dl>
+    <a class="btn" href="save-the-earth (4).html">Back to Wallet Overview</a>
+    <p class="note">If this stays pending for more than a minute, the webhook endpoint is not receiving events yet. The charge is still held by Stripe until fulfillment is confirmed server-side.</p>
+  </main>
+  <script src="js/goo-config.js"></script>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var sessionId = params.get('session_id') || '';
+      var statusEl = document.getElementById('status');
+      var copy = document.getElementById('copy');
+      var summary = document.getElementById('summary');
+      var tries = 0;
+      function money(cents, currency) {
+        try {
+          return new Intl.NumberFormat('en-US', { style: 'currency', currency: (currency || 'usd').toUpperCase() }).format(cents / 100);
+        } catch (e) {
+          return (cents / 100).toFixed(2) + ' ' + currency;
+        }
+      }
+      function done(ok, payload) {
+        document.getElementById('spin').hidden = true;
+        statusEl.className = 'status' + (ok ? '' : ' fail');
+        statusEl.textContent = ok ? 'PAYMENT CONFIRMED' : 'WAITING ON WEBHOOK';
+        if (payload && payload.found) {
+          summary.hidden = false;
+          document.getElementById('orderId').textContent = payload.orderId;
+          document.getElementById('amount').textContent = money(payload.amount, payload.currency);
+          document.getElementById('paidStatus').textContent = payload.status;
+        }
+        copy.textContent = ok
+          ? 'Stripe confirmed this restoration credit. Fulfillment was recorded by the webhook, not this redirect.'
+          : 'Checkout returned you here, but the order is not marked paid until the webhook lands. You can leave this page.';
+      }
+      async function poll() {
+        if (!sessionId) { done(false, null); copy.textContent = 'Missing session_id.'; return; }
+        var base = String(window.GOO_API || '').replace(/\/$/, '');
+        if (!base) { done(false, null); return; }
+        try {
+          var res = await fetch(base + '/api/orders/status?session_id=' + encodeURIComponent(sessionId));
+          var body = await res.json();
+          if (body.fulfilled) { done(true, body); return; }
+        } catch (e) {}
+        tries += 1;
+        if (tries < 20) setTimeout(poll, 1500);
+        else done(false, null);
+      }
+      poll();
+    })();
+  </script>
+</body>
+</html>

@@ -259,10 +259,9 @@
   }
 
   function cityPad(){
-    var cycle = overlay.classList.contains('cycle-on');
     return {
-      paddingTopLeft: cycle ? [360, 92] : [18, 92],
-      paddingBottomRight: [92, cycle ? 108 : 228]
+      paddingTopLeft: [18, 92],
+      paddingBottomRight: [92, 228]
     };
   }
 
@@ -571,13 +570,15 @@
   }
 
   function togglePhase(i){
+    var p = PHASES[i];
+    if(!p) return;
     checkedPhases[i] = !checkedPhases[i];
     renderRoadmap();
     if(window.GOO && GOO.Notify) GOO.Notify.toast({
       tone: checkedPhases[i] ? 'green' : 'amber',
-      title: checkedPhases[i] ? ('Phase 0' + PHASES[i].n + ' checked') : ('Phase 0' + PHASES[i].n + ' open'),
-      sub: PHASES[i].title,
-      n: '0' + PHASES[i].n
+      title: checkedPhases[i] ? ('Phase 0' + p.n + ' checked') : ('Phase 0' + p.n + ' open'),
+      sub: p.title,
+      n: '0' + p.n
     });
   }
 
@@ -644,28 +645,35 @@
       'Waste bin & collection hub install',
       'Waste audit, weighing & sorting'
     ];
+    var lastOn = -1;
     var steps = main.map(function(p, i){
-      var kind = i === 0 ? ' start' : i === 1 ? ' done' : '';
-      var glyph = i === 1 ? CHECK : PHASE_ICON[p.icon];
+      var on = !!checkedPhases[i];
+      var now = !on && (i === 0 || checkedPhases[i - 1]);
+      if(on) lastOn = i;
+      var kind = (on ? ' on' : '') + (now ? ' now' : '');
+      var glyph = on ? CHECK : PHASE_ICON[p.icon];
       var blurb = blurbs[i] || p.title;
-      return '<button type="button" class="rm-tl-step'+kind+'" data-i="'+i+'">'+
+      return '<button type="button" class="rm-tl-step'+kind+'" data-i="'+i+'" aria-pressed="'+(on?'true':'false')+'">'+
         '<span class="lab">'+p.short+'</span>'+
         '<span class="dot"><svg viewBox="0 0 24 24">'+glyph+'</svg></span>'+
         '<span class="sub">'+blurb+'</span>'+
       '</button>';
     }).join('');
+    var fillW = lastOn < 0 ? 0 : (lastOn * (100 / 6));
+    var payOn = !!checkedPhases[6];
+    var hashOn = !!checkedPhases[7];
     host.innerHTML =
       '<div class="rm-tl">'+
         '<i class="rm-tl-line"></i>'+
-        '<i class="rm-tl-fill"></i>'+
+        '<i class="rm-tl-fill" style="width:'+fillW.toFixed(3)+'%"></i>'+
         '<div class="rm-tl-row">'+steps+'</div>'+
-        '<button type="button" class="rm-tl-flag early" data-i="6">'+
+        '<button type="button" class="rm-tl-flag early'+(payOn?' on':'')+'" data-i="6" aria-pressed="'+(payOn?'true':'false')+'">'+
           '<span class="stem"></span>'+
           '<span class="mark"><svg viewBox="0 0 24 24">'+FLAG+'</svg></span>'+
           '<span class="lab">PAYOUT</span>'+
           '<span class="sub">Treasury payouts &amp; stipends</span>'+
         '</button>'+
-        '<button type="button" class="rm-tl-flag late" data-i="7">'+
+        '<button type="button" class="rm-tl-flag late'+(hashOn?' on':'')+'" data-i="7" aria-pressed="'+(hashOn?'true':'false')+'">'+
           '<span class="stem"></span>'+
           '<span class="mark"><svg viewBox="0 0 24 24">'+FLAG+'</svg></span>'+
           '<span class="lab">HASHSCAN</span>'+

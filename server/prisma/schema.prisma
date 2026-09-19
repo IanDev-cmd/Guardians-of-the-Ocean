@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  pending
+  paid
+  failed
+  canceled
+}
+
+enum SubscriptionStatus {
+  pending
+  active
+  past_due
+  canceled
+}
+
+model User {
+  id               String         @id @default(cuid())
+  email            String         @unique
+  stripeCustomerId String?        @unique @map("stripe_customer_id")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  orders           Order[]
+  subscriptions    Subscription[]
+
+  @@index([stripeCustomerId])
+  @@map("users")
+}
+
+model Order {
+  id                    String      @id @default(cuid())
+  userId                String      @map("user_id")
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeSessionId       String      @unique @map("stripe_session_id")
+  stripePaymentIntentId String?     @map("stripe_payment_intent_id")
+  amount                Int
+  currency              String      @default("usd")
+  status                OrderStatus @default(pending)
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([stripeSessionId])
+  @@index([status])
+  @@map("orders")
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @map("user_id")
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeSessionId      String             @unique @map("stripe_session_id")
+  stripeSubscriptionId String?            @unique @map("stripe_subscription_id")
+  amount               Int
+  currency             String             @default("usd")
+  status               SubscriptionStatus @default(pending)
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([stripeSessionId])
+  @@map("subscriptions")
+}
+
+model StripeEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@map("stripe_events")
+}

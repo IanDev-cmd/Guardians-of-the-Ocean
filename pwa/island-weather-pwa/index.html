@@ -20,7 +20,8 @@
     --card-icon:#20241f;
     --accent:#84c02c;
     --divider:rgba(255,255,255,0.35);
-    --unit: 1px;
+    --tile: clamp(70px, 20vmin, 86px);
+    --gap: clamp(8px, 2.1vmin, 12px);
   }
 
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -42,39 +43,33 @@
     background-attachment:fixed;
   }
 
-  /* Fullscreen stage, everything scales off vmin so geometry ratio is
-     preserved identically across phone / tablet / desktop */
   .stage{
     position:fixed;
     inset:0;
     display:flex;
-    align-items:flex-end;
+    align-items:stretch;
     justify-content:flex-end;
   }
 
-  /* The whole widget is sized as a phone-proportioned panel that scales
-     with viewport height, and simply centers itself on wider canvases
-     so the cloned layout never stretches or distorts */
-  /* Every measurement below is clamp(min, N-vmin, max). vmin is the
-     SMALLER of viewport width/height, so on a tall phone (portrait)
-     it tracks width, and on a wide monitor/browser window (landscape)
-     it tracks height — the column can never exceed the shorter
-     dimension and so can never get cut off top/bottom or overflow
-     sideways, on any device or window shape. */
   .panel{
-    width: 100%;
-    max-width: 100%;
+    width: min(100%, 440px);
     height: 100%;
     max-height: 100dvh;
     display:flex;
     flex-direction:column;
     align-items:flex-end;
-    justify-content:space-between;
-    padding-top: max(76px, calc(env(safe-area-inset-top) + 52px));
-    padding-right: clamp(16px, 5vw, 40px);
-    padding-bottom: max(28px, calc(env(safe-area-inset-bottom) + 18px));
-    padding-left: clamp(12px, 4vw, 28px);
+    justify-content:flex-end;
+    gap: clamp(8px, 1.4vh, 16px);
+    padding-top: max(72px, calc(env(safe-area-inset-top) + 52px));
+    padding-right: clamp(14px, 4vw, 28px);
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    padding-left: clamp(14px, 4vw, 28px);
     overflow:hidden;
+    --grid-w: min(
+      100%,
+      calc(var(--tile) * 4 + var(--gap) * 3),
+      calc((100dvh - 360px) * 1.28)
+    );
   }
 
   .info{
@@ -84,22 +79,23 @@
     text-align:right;
     color:var(--ink);
     width:100%;
-    max-width:min(92vw, 560px);
-    flex:0 0 auto;
+    max-width:min(100%, 560px);
+    flex:0 1 auto;
+    min-height:0;
   }
 
   .headline{
-    font-size: clamp(40px, 9.2vw, 76px);
+    font-size: clamp(28px, 7.2vmin, 56px);
     font-weight:600;
     line-height:1.08;
     letter-spacing:-0.5px;
-    margin:0 0 clamp(10px, 1.8vh, 18px) 0;
+    margin:0 0 clamp(6px, 1.2vh, 14px) 0;
     max-width:100%;
     transition:opacity .18s ease, transform .18s ease;
   }
 
   .subtext{
-    font-size:clamp(16px, 4.1vw, 28px);
+    font-size:clamp(13px, 3.2vmin, 22px);
     font-weight:400;
     line-height:1.4;
     color:var(--ink-dim);
@@ -113,8 +109,8 @@
   }
 
   .time{
-    margin-top:clamp(18px, 3.4vh, 40px);
-    font-size:clamp(30px, 8vw, 58px);
+    margin-top:clamp(10px, 2.2vh, 28px);
+    font-size:clamp(26px, 6.4vmin, 48px);
     font-weight:500;
     letter-spacing:0.5px;
   }
@@ -126,16 +122,15 @@
   }
 
   .date{
-    margin-top:clamp(6px, 1.1vh, 12px);
-    font-size:clamp(13px, 3.2vw, 20px);
+    margin-top:clamp(4px, 0.8vh, 10px);
+    font-size:clamp(12px, 2.6vmin, 18px);
     font-weight:400;
     color:var(--ink-dimmer);
     line-height:1.4;
   }
 
   .divider{
-    margin-top:clamp(14px, 2.4vh, 24px);
-    margin-bottom:clamp(12px, 2vh, 20px);
+    margin:0;
     width:clamp(140px, 42vw, 280px);
     height:1px;
     background:var(--divider);
@@ -143,18 +138,17 @@
   }
 
   .grid{
-    width:min(92vw, 520px);
-    flex:1 1 auto;
-    min-height:220px;
-    max-height:48dvh;
+    width: var(--grid-w);
     display:grid;
-    grid-template-columns:repeat(4, 1fr);
-    grid-template-rows:repeat(3, 1fr);
-    gap:clamp(10px, 2.4vw, 18px);
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: var(--gap);
+    flex: 0 0 auto;
+    overflow:hidden;
   }
 
   .tile{
-    border-radius:clamp(12px, 2.6vw, 20px);
+    border-radius:18px;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -164,14 +158,15 @@
     border:none;
     padding:0;
     width:100%;
-    height:100%;
-    min-height:58px;
+    aspect-ratio:1 / 1;
+    min-height:0;
+    max-height:86px;
     transition:transform .12s ease, background .18s ease, box-shadow .18s ease;
   }
 
   .tile:hover{
-    transform:translateY(-2px) scale(1.05);
-    box-shadow:0 10px 20px rgba(0,0,0,0.22);
+    transform:translateY(-2px) scale(1.04);
+    box-shadow:0 10px 20px rgba(0,0,0,.22);
   }
 
   .tile:active{
@@ -179,8 +174,8 @@
   }
 
   .tile svg{
-    width:48%;
-    height:48%;
+    width:46%;
+    height:46%;
   }
 
   .tile.active{
@@ -192,6 +187,88 @@
   .tile svg *{
     stroke:var(--card-icon);
     transition:stroke .18s ease;
+  }
+
+  .pay-card{
+    width: var(--grid-w);
+    flex: 0 0 auto;
+    background: rgba(255,255,255,.94);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,.55);
+    box-shadow: 0 10px 28px rgba(0,16,40,.22);
+    border-radius: 16px;
+    padding: 14px 14px 12px;
+    color: #0d0f0c;
+    text-align: left;
+  }
+  .pay-card .tpop-h{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .pay-card .tpop-rank{
+    width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+    background:#0d0f0c; color:#fff; font:600 12px/1 'JetBrains Mono', ui-monospace, monospace;
+    flex-shrink:0; border-radius:8px;
+  }
+  .pay-card .tpop-h b{ display:block; font-size:13px; font-weight:700; letter-spacing:.04em; }
+  .pay-card .tpop-h i{ display:block; font-style:normal; font-size:9px; color:#6b7268; font-family:'JetBrains Mono', ui-monospace, monospace; margin-top:1px; }
+  .pay-card .tpop-ph{
+    margin-left:auto; font:600 10px/1 'JetBrains Mono', ui-monospace, monospace;
+    color:#5f9226; background:rgba(139,197,63,.16); padding:4px 7px; border-radius:8px;
+  }
+  .pay-card .tpop-kpis{ display:flex; gap:6px; margin-bottom:8px; }
+  .pay-card .tpop-kpi{
+    flex:1; background:#f4f5f1; padding:8px 4px; text-align:center; border-radius:10px; min-width:0;
+  }
+  .pay-card .tpop-kpi b{ display:block; font:600 12px/1.15 'JetBrains Mono', ui-monospace, monospace; }
+  .pay-card .tpop-kpi i{ font-style:normal; font-size:8px; color:#6b7268; letter-spacing:.04em; font-family:'JetBrains Mono', ui-monospace, monospace; }
+  .pay-card .tpop-fund{
+    font:600 11px/1.3 'JetBrains Mono', ui-monospace, monospace;
+    color:#5f9226; margin-bottom:8px; letter-spacing:.02em;
+  }
+  .pay-card .pay-email{
+    display:block; margin-bottom:8px;
+  }
+  .pay-card .pay-email input{
+    width:100%; height:36px; border:1px solid rgba(13,15,12,.12);
+    background:#f7f7f4; border-radius:10px; padding:0 10px;
+    font:600 12px/1 'Poppins', sans-serif; color:#0d0f0c;
+  }
+  .pay-card .tpop-cta{ display:flex; gap:6px; }
+  .pay-card .tpop-cta button{
+    flex:1; border:none; background:#0d0f0c; color:#fff;
+    font:700 10px/1 'Space Grotesk', 'Poppins', sans-serif; letter-spacing:.06em;
+    padding:10px 0; cursor:pointer; border-radius:10px;
+  }
+  .pay-card .tpop-cta button.hash{ background:#efefed; color:#0d0f0c; }
+  .pay-card .tpop-cta button:disabled{ opacity:.65; cursor:wait; }
+
+  .ledger-bar{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    width: var(--grid-w);
+    min-height:48px;
+    flex:0 0 auto;
+  }
+
+  body[data-shell="pwa"] #pwaCompassBtn.compass-fab{
+    position:relative;
+    left:auto;
+    bottom:auto;
+    top:auto;
+    width:46px;
+    height:46px;
+    margin:0;
+    flex:0 0 auto;
+  }
+
+  @media (max-height: 560px){
+    .subtext{ display:none; }
+    .headline{ font-size: clamp(22px, 6vh, 36px); }
+    .time{ margin-top:6px; font-size: clamp(22px, 5.4vh, 32px); }
+    .date{ font-size:12px; }
+    .tile{ max-height:72px; border-radius:14px; }
+    .pay-card{ padding:10px 12px; }
+    .pay-card .pay-email{ display:none; }
+    .pay-card .tpop-fund{ display:none; }
   }
 
   /* install button, unobtrusive, only shows when app is installable */
@@ -226,17 +303,40 @@
 
     <div class="divider"></div>
 
+    <div class="pay-card" id="pwaPayCard">
+      <div class="tpop-h">
+        <span class="tpop-rank">$</span>
+        <div><b>RESTORATION CREDIT</b><i>Stripe Checkout · treasury</i></div>
+        <span class="tpop-ph" id="pwaPayLive">PAY</span>
+      </div>
+      <div class="tpop-kpis">
+        <div class="tpop-kpi"><b id="pwaBalOp">—</b><i>AVAILABLE</i></div>
+        <div class="tpop-kpi"><b id="pwaBalPend">12</b><i>PENDING</i></div>
+        <div class="tpop-kpi"><b id="pwaBalSplit">85/15</b><i>SPLIT</i></div>
+      </div>
+      <div class="tpop-fund" id="pwaBalFund">Field ops 85% · treasury 15% · HCS</div>
+      <label class="pay-email">
+        <input id="pwaPayEmail" type="email" autocomplete="email" placeholder="you@example.com">
+      </label>
+      <div class="tpop-cta">
+        <button type="button" class="pow" id="pwaCheckout">CHECKOUT</button>
+        <button type="button" class="hash" id="pwaWalletView">WALLET</button>
+      </div>
+    </div>
+
     <div class="grid" id="iconGrid">
       <!-- tiles injected by script -->
+    </div>
+    <div class="ledger-bar">
+      <button type="button" id="pwaCompassBtn" class="compass-fab" aria-label="GPS compass">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><polygon points="12 6 14.2 12 12 18 9.8 12" fill="currentColor" stroke="none"/></svg>
+      </button>
     </div>
 
   </div>
 </div>
 
 <button id="installBtn">Install app</button>
-<button type="button" id="pwaCompassBtn" class="compass-fab" aria-label="GPS compass" style="left:16px;bottom:24px;">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><polygon points="12 6 14.2 12 12 18 9.8 12" fill="currentColor" stroke="none"/></svg>
-</button>
 <div class="pwa-load" id="pwaLoad">
   <div class="em">🌍🌊</div>
   <div class="spin"></div>
@@ -246,9 +346,11 @@
   <button type="button" class="close-view" id="pwaCloseView">← Ledger</button>
   <iframe id="pwaIframe" title="Guardians maps"></iframe>
 </div>
+<script src="../../js/goo-config.js"></script>
 <script src="../../js/goo-core.js"></script>
 <script src="../../js/goo-compass.js"></script>
 <script src="../../js/goo-shell.js"></script>
+<script src="../../js/goo-stripe.js"></script>
 <script src="../../js/pwa-app.js"></script>
 </body>
 </html>

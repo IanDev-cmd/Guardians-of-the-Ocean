@@ -1,11 +1,16 @@
-const CACHE_NAME = 'guardians-ocean-v11';
+const CACHE_NAME = 'guardians-ocean-v14';
 const ASSETS = [
   './',
   './index.html',
   './save-the-earth (4).html',
+  './success.html',
+  './cart.html',
+  './cancel.html',
   './css/goo.css',
   './js/goo-core.js',
   './js/boot.js',
+  './js/goo-config.js',
+  './js/goo-stripe.js',
   './js/goo-compass.js',
   './js/goo-shell.js',
   './js/goo-globe.js',

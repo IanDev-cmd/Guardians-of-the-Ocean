@@ -23,7 +23,12 @@ Then open `http://127.0.0.1:8765/`. Mobile / standalone sessions land on the PWA
 | `js/goo-compass.js` | GPS heading, elevation, map-ring HUD |
 | `js/goo-shell.js` | Install, share, tutorial, service worker |
 | `js/goo-globe.js` | Three.js globe (hardware LOD, deferred GPU init) |
+| `js/goo-config.js` | Public Stripe API origin (`GOO_API`) |
+| `js/goo-stripe.js` | Checkout session create + live balances |
 | `js/goo-cards.js` | Sidebar cards and globe chrome |
+| `success.html` / `cart.html` | Stripe return pages |
+| `server/` | Express + Prisma Stripe API |
+| `stripe-ui/` | Typed React/Next.js Checkout copies |
 | `js/goo-map.js` | Leaflet overlays and phase roadmap |
 | `js/pwa-app.js` | PWA clock and tile → 3D/2D loader |
 | `css/goo.css` | Shared chrome (toasts, compass, tutorial) |

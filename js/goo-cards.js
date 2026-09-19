@@ -379,11 +379,13 @@ document.addEventListener('pointerover', function(e){
     elHero.style.background = 'radial-gradient(120% 120% at 30% 18%, ' + d.accent + '22, transparent 55%), #0a100e';
     elHistoryLabel.textContent = d.history;
     updateStepState();
+    syncCheckout(id);
 
     [].slice.call(document.querySelectorAll('.icon-wrap')).forEach(function(o){ o.classList.remove('show'); });
 
     modal.classList.add('open');
   }
+  window.openUxCard = openCard;
 
   function closeCard(){ modal.classList.remove('open'); elHero.classList.remove('preview'); }
 
@@ -424,6 +426,64 @@ document.addEventListener('pointerover', function(e){
     toast.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 1700);
+  }
+
+  var checkoutWrap = document.getElementById('uxCheckoutWrap');
+  var checkoutBtn = document.getElementById('uxCheckout');
+  var checkoutEmail = document.getElementById('uxCheckoutEmail');
+  if (checkoutEmail) {
+    checkoutEmail.value = localStorage.getItem('goo-checkout-email') || '';
+  }
+
+  function paintWallet(balance) {
+    var rows = DATA.wallet.rows;
+    if (!rows || !balance) return;
+    rows[0].sub = balance.operating.label + ' · live Stripe available';
+    rows[0].status = { t: balance.operating.cents > 0 ? 'ok' : 'warn', text: balance.operating.status };
+    rows[1].sub = 'Scheduled disbursements + Stripe pending';
+    rows[1].status = { t: 'warn', text: balance.payoutQueue.label };
+    rows[2].status = { t: 'ok', text: balance.spendSplit.label };
+    if (current === 'wallet') elRows.innerHTML = rows.map(renderRow).join('');
+  }
+
+  function syncCheckout(id) {
+    if (!checkoutWrap) return;
+    var on = id === 'wallet';
+    checkoutWrap.classList.toggle('show', on);
+    checkoutWrap.hidden = !on;
+    if (!on || !window.GooStripe || !window.GooStripe.fetchBalance) return;
+    window.GooStripe.fetchBalance().then(paintWallet).catch(function () {
+      DATA.wallet.rows[0].sub = 'Connect treasury API to show live Stripe balances';
+      if (current === 'wallet') elRows.innerHTML = DATA.wallet.rows.map(renderRow).join('');
+    });
+  }
+
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', function () {
+      if (checkoutBtn.disabled) return;
+      var email = checkoutEmail ? checkoutEmail.value.trim() : '';
+      if (!email || email.indexOf('@') < 0) {
+        showToast('Enter a valid email for Checkout');
+        if (checkoutEmail) checkoutEmail.focus();
+        return;
+      }
+      localStorage.setItem('goo-checkout-email', email);
+      if (!window.GooStripe || !window.GooStripe.startCheckout) {
+        showToast('Checkout is not available');
+        return;
+      }
+      checkoutBtn.disabled = true;
+      checkoutBtn.setAttribute('aria-busy', 'true');
+      checkoutBtn.classList.add('is-loading');
+      window.GooStripe.startCheckout(email, 'payment').then(function (session) {
+        window.location.href = session.url;
+      }).catch(function (err) {
+        checkoutBtn.disabled = false;
+        checkoutBtn.setAttribute('aria-busy', 'false');
+        checkoutBtn.classList.remove('is-loading');
+        showToast(err && err.message ? err.message : 'Checkout failed');
+      });
+    });
   }
 
   document.querySelectorAll('.uxaction').forEach(function(btn){
@@ -499,15 +559,30 @@ function buildCard(c, idx){
   return b;
 }
 
+function hStrip(){
+  var r = document.documentElement;
+  return r.classList.contains('embed') || r.classList.contains('from-pwa') || r.classList.contains('mobile');
+}
+
 function sizeCards(){
-  // card height is 15.1% of the frame, gap 1.36%
+  // card height is 15.1% of the frame, gap 1.36% — same size on PWA
   var h = innerHeight * 0.151;
   var g = innerHeight * 0.0136;
+  var strip = hStrip();
+  var w = Math.max(innerWidth * 0.14, h * 1.65);
   [].forEach.call(track.querySelectorAll('.card'), function(el){
     el.style.height = h + 'px';
-    el.style.marginBottom = g + 'px';
+    if(strip){
+      el.style.width = w + 'px';
+      el.style.marginBottom = '0';
+      el.style.marginRight = g + 'px';
+    } else {
+      el.style.width = '';
+      el.style.marginRight = '';
+      el.style.marginBottom = g + 'px';
+    }
   });
-  return h + g;
+  return strip ? (w + g) : (h + g);
 }
 
 CARDS.forEach(function(c, i){ track.appendChild(buildCard(c, i)); });
@@ -517,16 +592,22 @@ var pitch = sizeCards();
 var loopLen = pitch * CARDS.length;
 addEventListener('resize', function(){ pitch = sizeCards(); loopLen = pitch * CARDS.length; });
 
-var off = 0, vel = 0, drift = 0.22, dragging = false, lastY = 0, boost = 0;
+var off = 0, vel = 0, drift = 0.22, dragging = false, lastY = 0, lastX = 0, boost = 0;
 function render(){
   if(!dragging){ off += drift + vel; vel *= 0.93; }
   if(off >= loopLen) off -= loopLen;
   if(off < 0) off += loopLen;
-  track.style.transform = 'translate3d(0,' + (-off).toFixed(2) + 'px,0)';
+  var strip = hStrip();
+  track.style.transform = strip
+    ? 'translate3d(' + (-off).toFixed(2) + 'px,0,0)'
+    : 'translate3d(0,' + (-off).toFixed(2) + 'px,0)';
 
   var p = (off % loopLen) / loopLen;
-  var trackH = list.parentNode ? document.getElementById('sb').clientHeight : 0;
-  sbThumb.style.transform = 'translateY(' + (p * trackH * 0.78).toFixed(1) + 'px)';
+  var sbEl = document.getElementById('sb');
+  var trackLen = sbEl ? (strip ? sbEl.clientWidth : sbEl.clientHeight) : 0;
+  sbThumb.style.transform = strip
+    ? 'translateX(' + (p * trackLen * 0.78).toFixed(1) + 'px)'
+    : 'translateY(' + (p * trackLen * 0.78).toFixed(1) + 'px)';
 
   // the globe visibly scales up while the list moves (frame 0 vs frame 90)
   var speed = Math.min(Math.abs(drift + vel) / 6, 1);
@@ -541,20 +622,28 @@ render();
 
 list.addEventListener('wheel', function(e){
   e.preventDefault();
-  vel += e.deltaY * 0.06;
+  var delta = hStrip() ? (e.deltaX || e.deltaY) : e.deltaY;
+  vel += delta * 0.06;
   vel = Math.max(-26, Math.min(26, vel));
 }, {passive:false});
 
-var downY = 0, armed = false;
+var downY = 0, downX = 0, armed = false;
 list.addEventListener('pointerdown', function(e){
-  armed = true; moved = false; downY = lastY = e.clientY;
+  armed = true; moved = false; downY = lastY = e.clientY; downX = lastX = e.clientX;
 });
 list.addEventListener('pointermove', function(e){
   if(!armed) return;
-  if(!dragging && Math.abs(e.clientY - downY) > 4){ dragging = true; moved = true; }
+  var strip = hStrip();
+  var dx = e.clientX - downX, dy = e.clientY - downY;
+  if(!dragging && Math.abs(strip ? dx : dy) > 4){ dragging = true; moved = true; }
   if(!dragging) return;
-  var d = e.clientY - lastY; lastY = e.clientY;
-  off -= d; vel = -d * 0.5;
+  if(strip){
+    var d = e.clientX - lastX; lastX = e.clientX;
+    off -= d; vel = -d * 0.5;
+  } else {
+    var d2 = e.clientY - lastY; lastY = e.clientY;
+    off -= d2; vel = -d2 * 0.5;
+  }
 });
 ['pointerup','pointercancel','pointerleave'].forEach(function(t){
   list.addEventListener(t, function(){ armed = false; dragging = false; });
@@ -659,12 +748,13 @@ addEventListener('keydown', function(e){
   function applyMul(){
     if(wrap) wrap.style.setProperty('--gmul', mul.toFixed(3));
   }
+  applyMul();
   if(plus) plus.addEventListener('click', function(){
-    mul = Math.min(1.55, mul * 1.16);
+    mul = Math.min(1.28, mul * 1.12);
     applyMul();
   });
   if(minus) minus.addEventListener('click', function(){
-    mul = Math.max(0.72, mul / 1.16);
+    mul = Math.max(0.62, mul / 1.12);
     applyMul();
   });
   if(layerBtn && panel){

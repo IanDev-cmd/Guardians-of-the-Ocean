@@ -56,7 +56,6 @@
     var url = encodeURIComponent(SHARE_URL);
     var text = encodeURIComponent(SHARE_TEXT);
     var links = {
-      ig: 'https://www.instagram.com/',
       x: 'https://twitter.com/intent/tweet?text=' + text + '&url=' + url,
       fb: 'https://www.facebook.com/sharer/sharer.php?u=' + url,
       wa: 'https://wa.me/?text=' + text + '%20' + url
@@ -66,10 +65,6 @@
       if (links[k]) a.href = links[k];
       a.addEventListener('click', function (e) {
         Sound.click();
-        if (k === 'ig' && navigator.share) {
-          e.preventDefault();
-          navigator.share({ title: 'Guardians of the Ocean', text: SHARE_TEXT, url: SHARE_URL }).catch(function () {});
-        }
       });
     });
   }
@@ -202,12 +197,17 @@
       window.__spinBoost = 0.002;
       window.__globeAim = null;
     }
-    if (Device.view === 'map') {
+    if (Device.view === 'map' || Device.view === 'roadmap') {
       waitFor(function () { return typeof window.openTerraRoadmap === 'function'; }, function () {
         window.openTerraRoadmap();
       }, 20);
     }
-    if (Device.fromPwa && !document.getElementById('pwaBack')) {
+    if (Device.view === 'wallet' || Device.view === 'milestone') {
+      waitFor(function () { return typeof window.openUxCard === 'function'; }, function () {
+        window.openUxCard(Device.view);
+      }, 25);
+    }
+    if (Device.fromPwa && !Device.embed && !document.getElementById('pwaBack')) {
       var back = document.createElement('a');
       back.id = 'pwaBack';
       back.className = 'pwa-back';
