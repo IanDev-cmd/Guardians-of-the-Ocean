@@ -160,7 +160,7 @@
       el.type = 'button';
       el.className = 'gpin' + (c.risk==='critical' ? ' crit' : c.risk==='elevated' ? ' elev' : '');
       el.dataset.id = c.id;
-      el.innerHTML = '<i></i><span>' + c.name.toUpperCase() + '</span>';
+      el.innerHTML = '<i></i><span>' + c.name + '</span>';
       el.addEventListener('click', function(ev){
         ev.stopPropagation();
         window.__chosenCity = c.id;
@@ -208,6 +208,7 @@
         c.el.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)';
         c.el.style.opacity = front ? '1' : '0';
         c.el.classList.toggle('front', front);
+        c.el.classList.toggle('flip', x > w * 0.58);
       });
     }
     renderer.render(scene, camera);

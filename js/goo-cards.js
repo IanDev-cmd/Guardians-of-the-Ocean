@@ -476,7 +476,7 @@ function buildCard(c, idx){
     '<div class="shot" style="background:' + c.fall + '">' +
       (c.img ? '<img src="' + c.img + '" alt="" loading="' + (eager ? 'eager' : 'lazy') + '" decoding="async"' + (eager ? ' fetchpriority="high"' : '') + '>' : '') +
     '</div>' +
-    '<span class="cap">' + c.l1 + '<br>' + c.l2 + '</span>';
+    '<span class="cap"><span class="cap-kicker">' + c.l1 + '</span><span class="cap-title">' + c.l2 + '</span></span>';
   var im = b.querySelector('img');
   if(im) im.addEventListener('error', function(){ im.remove(); });
   b.addEventListener('click', function(){ if(moved){ moved = false; return; } open(c, b); });
@@ -484,9 +484,8 @@ function buildCard(c, idx){
 }
 
 function sizeCards(){
-  // card height is 15.1% of the frame, gap 1.36%
-  var h = innerHeight * 0.151;
-  var g = innerHeight * 0.0136;
+  var h = 88;
+  var g = 12;
   [].forEach.call(track.querySelectorAll('.card'), function(el){
     el.style.height = h + 'px';
     el.style.marginBottom = g + 'px';

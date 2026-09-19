@@ -243,7 +243,7 @@
     var cycle = overlay.classList.contains('cycle-on');
     return {
       paddingTopLeft: cycle ? [360, 92] : [18, 92],
-      paddingBottomRight: [92, cycle ? 108 : 196]
+      paddingBottomRight: [92, cycle ? 108 : 228]
     };
   }
 
@@ -609,27 +609,38 @@
   function renderPath(){
     var host = document.getElementById('rmPath');
     if(!host) return;
-    var done = 0;
-    PHASES.forEach(function(p, i){ if(checkedPhases[i]) done += 1; });
-    var fillPct = Math.max(0, Math.min(100, (done / Math.max(PHASES.length - 1, 1)) * 100));
-    var steps = PHASES.map(function(p, i){
-      var on = !!checkedPhases[i];
-      var now = !on && (i === 0 || checkedPhases[i - 1]);
-      var cls = 'rm-tl-step' + (on ? ' on' : '') + (now ? ' now' : '');
-      var mark = on ? '✓' : (now ? p.n : '');
-      return '<button type="button" class="'+cls+'" data-i="'+i+'">'+
+    var main = PHASES.slice(0, 6);
+    var CHECK = '<path d="M6 12.2l3.2 3.2L18 8.2"/>';
+    var FLAG = '<path d="M7 2h10l-2.6 4L17 10H7V21H5V2h2Z"/>';
+    var steps = main.map(function(p, i){
+      var kind = i === 0 ? ' start' : i === 1 ? ' done' : '';
+      var glyph = i === 1 ? CHECK : PHASE_ICON[p.icon];
+      var blurb = i === 0 ? 'Local Approval & Community...' : p.title;
+      return '<button type="button" class="rm-tl-step'+kind+'" data-i="'+i+'">'+
         '<span class="lab">'+p.short+'</span>'+
-        '<span class="dot">'+mark+'</span>'+
-        '<span class="sub">'+p.title+'</span>'+
+        '<span class="dot"><svg viewBox="0 0 24 24">'+glyph+'</svg></span>'+
+        '<span class="sub">'+blurb+'</span>'+
       '</button>';
     }).join('');
     host.innerHTML =
       '<div class="rm-tl">'+
         '<i class="rm-tl-line"></i>'+
-        '<i class="rm-tl-fill" style="width:'+(fillPct * 0.88).toFixed(1)+'%"></i>'+
-        steps+
+        '<i class="rm-tl-fill"></i>'+
+        '<div class="rm-tl-row">'+steps+'</div>'+
+        '<button type="button" class="rm-tl-flag early" data-i="6">'+
+          '<span class="stem"></span>'+
+          '<span class="mark"><svg viewBox="0 0 24 24">'+FLAG+'</svg></span>'+
+          '<span class="lab">PAYOUT</span>'+
+          '<span class="sub">Treasury Payouts &amp; Stipend Disbursement</span>'+
+        '</button>'+
+        '<button type="button" class="rm-tl-flag late" data-i="7">'+
+          '<span class="stem"></span>'+
+          '<span class="mark"><svg viewBox="0 0 24 24">'+FLAG+'</svg></span>'+
+          '<span class="lab">HASHSCAN</span>'+
+          '<span class="sub">On-Chain HashScan Audit &amp; Public Record</span>'+
+        '</button>'+
       '</div>';
-    host.querySelectorAll('.rm-tl-step').forEach(function(el){
+    host.querySelectorAll('[data-i]').forEach(function(el){
       el.addEventListener('click', function(){ togglePhase(+el.dataset.i); });
     });
   }
