@@ -301,8 +301,34 @@ document.addEventListener('pointerover', function(e){
   var nextCard= document.getElementById('uxNextCard');
   var toast   = document.getElementById('uxToast');
   var closeBtn= document.getElementById('uxClose');
+  var closePwa= document.getElementById('uxClosePwa');
+  var ledgerBtns = document.getElementById('uxLedgerBtns');
+  var ledgerSheet = document.getElementById('uxLedgerSheet');
+  var ledgerTitle = document.getElementById('uxLedgerTitle');
+  var ledgerList = document.getElementById('uxLedgerList');
+  var ledgerClose = document.getElementById('uxLedgerClose');
 
   var current = null, tagIndex = 0, toastTimer = null;
+
+  function pwaPhone(){
+    var r = document.documentElement;
+    return r.classList.contains('embed') && innerWidth <= 760;
+  }
+
+  var LEDGER_LISTS = {
+    summary: [
+      { t:'Operating cash', s:'Stripe available balance', a:'$0.00' },
+      { t:'Payout queue', s:'Scheduled field disbursements', a:'12 pending' },
+      { t:'Spend split', s:'Field ops / treasury', a:'85 / 15' },
+      { t:'Restoration credit', s:'Checkout session', a:'Ready' }
+    ],
+    history: [
+      { t:'Treasury opened', s:'Wallet Overview · live Stripe', a:'—' },
+      { t:'Payout queue synced', s:'12 operators awaiting release', a:'Queued' },
+      { t:'HCS topic linked', s:'Field ops 85% · treasury 15%', a:'Live' },
+      { t:'Checkout', s:'No settled charges yet', a:'$0.00' }
+    ]
+  };
 
   function svg(paths, extra){ return '<svg viewBox="0 0 24 24"' + (extra||'') + '>' + paths + '</svg>'; }
 
@@ -380,6 +406,12 @@ document.addEventListener('pointerover', function(e){
     elHistoryLabel.textContent = d.history;
     updateStepState();
     syncCheckout(id);
+    if (ledgerBtns) {
+      var showLedger = pwaPhone() && id === 'wallet';
+      ledgerBtns.hidden = !showLedger;
+      ledgerBtns.classList.toggle('show', showLedger);
+    }
+    closeLedgerSheet();
 
     [].slice.call(document.querySelectorAll('.icon-wrap')).forEach(function(o){ o.classList.remove('show'); });
 
@@ -387,7 +419,29 @@ document.addEventListener('pointerover', function(e){
   }
   window.openUxCard = openCard;
 
-  function closeCard(){ modal.classList.remove('open'); elHero.classList.remove('preview'); }
+  function closeLedgerSheet(){
+    if (!ledgerSheet) return;
+    ledgerSheet.classList.remove('open');
+    ledgerSheet.hidden = true;
+  }
+
+  function openLedgerSheet(kind){
+    if (!pwaPhone() || !ledgerSheet || !ledgerList) return;
+    var title = kind === 'history' ? 'Ledger History' : 'Ledger Summary';
+    var rows = LEDGER_LISTS[kind] || LEDGER_LISTS.summary;
+    if (ledgerTitle) ledgerTitle.textContent = title;
+    ledgerList.innerHTML = rows.map(function(r){
+      return '<li><span>' + r.t + '<i>' + r.s + '</i></span><b>' + r.a + '</b></li>';
+    }).join('');
+    ledgerSheet.hidden = false;
+    ledgerSheet.classList.add('open');
+  }
+
+  function closeCard(){
+    closeLedgerSheet();
+    modal.classList.remove('open');
+    elHero.classList.remove('preview');
+  }
 
   document.querySelectorAll('.icon-tip').forEach(function(tip){
     tip.addEventListener('click', function(ev){
@@ -396,7 +450,17 @@ document.addEventListener('pointerover', function(e){
     });
   });
 
-  closeBtn.addEventListener('click', closeCard);
+  if (closeBtn) closeBtn.addEventListener('click', closeCard);
+  if (closePwa) closePwa.addEventListener('click', closeCard);
+  if (ledgerClose) ledgerClose.addEventListener('click', closeLedgerSheet);
+  if (ledgerSheet) ledgerSheet.addEventListener('click', function(ev){
+    if (ev.target === ledgerSheet) closeLedgerSheet();
+  });
+  if (ledgerBtns) ledgerBtns.addEventListener('click', function(ev){
+    var btn = ev.target.closest('[data-ledger]');
+    if (!btn) return;
+    openLedgerSheet(btn.getAttribute('data-ledger'));
+  });
   modal.addEventListener('click', function(ev){ if(ev.target === modal) closeCard(); });
 
   stepUp.addEventListener('click', function(){ shiftTag(-1); });
@@ -443,6 +507,9 @@ document.addEventListener('pointerover', function(e){
     rows[1].sub = 'Scheduled disbursements + Stripe pending';
     rows[1].status = { t: 'warn', text: balance.payoutQueue.label };
     rows[2].status = { t: 'ok', text: balance.spendSplit.label };
+    LEDGER_LISTS.summary[0].a = balance.operating.label || '$0.00';
+    LEDGER_LISTS.summary[1].a = balance.payoutQueue && balance.payoutQueue.label ? balance.payoutQueue.label : '12 pending';
+    LEDGER_LISTS.summary[2].a = balance.spendSplit && balance.spendSplit.label ? balance.spendSplit.label.replace(' SPLIT', '') : '85 / 15';
     if (current === 'wallet') elRows.innerHTML = rows.map(renderRow).join('');
   }
 

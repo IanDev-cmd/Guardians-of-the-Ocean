@@ -175,12 +175,22 @@
       el.dataset.id = c.id;
       el.innerHTML = '<i></i><span>' + c.name.toUpperCase() + '</span>';
       el.addEventListener('click', function(ev){
+        ev.preventDefault();
         ev.stopPropagation();
         window.__chosenCity = c.id;
         if(window.__globeLook) window.__globeLook(c.lat, c.lng);
       });
       pinRoot.appendChild(el);
       c.el = el;
+    });
+    pinRoot.addEventListener('click', function(ev){ ev.stopPropagation(); });
+  }
+  if(wrap){
+    wrap.addEventListener('click', function(ev){ ev.stopPropagation(); });
+    wrap.addEventListener('pointerup', function(ev){
+      if(ev.target && (ev.target === wrap || ev.target.id === 'globeMount' || ev.target.closest && ev.target.closest('#globeMount'))){
+        ev.stopPropagation();
+      }
     });
   }
 

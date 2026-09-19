@@ -726,6 +726,11 @@
     return window.GOO && GOO.Device && GOO.Device.reduced;
   }
 
+  function pwaView(){
+    var d = window.GOO && GOO.Device;
+    return !!(d && (d.embed || d.fromPwa));
+  }
+
   var cinematic = false;
   var idleTimer = null;
   var tourTimer = null;
@@ -738,10 +743,12 @@
   function bumpIdle(){
     clearTimeout(idleTimer);
     stopTour();
+    if(pwaView()) return;
     if(!overlay.classList.contains('open') || cinematic || reducedMotion()) return;
     idleTimer = setTimeout(startIdleTour, 8000);
   }
   function startIdleTour(){
+    if(pwaView()) return;
     if(!map || !overlay.classList.contains('open') || cinematic) return;
     var pool = CITIES.filter(function(c){ return c.id !== tourLast; });
     var next = pool[Math.floor(Math.random() * pool.length)] || CITIES[0];
@@ -764,6 +771,7 @@
   }
 
   function openMap(cityId){
+    if(pwaView() && window.GOO.Device.view === 'globe') return;
     var id = (typeof cityId === 'string' && cityId) ? cityId : (window.__chosenCity || 'jakarta');
     window.__chosenCity = id;
     var city = cityById(id);
@@ -771,13 +779,14 @@
     var modal = document.getElementById('uxmodal');
     if(modal) modal.classList.remove('open');
     var appEl = document.getElementById('app');
-    if(appEl) appEl.classList.add('globe-focus');
     cinematic = true;
     stopTour();
     clearTimeout(idleTimer);
-    var spinMs = reducedMotion() ? 800 : 5000;
-    window.__spinBoost = reducedMotion() ? 0 : 0.042;
-    if(window.__globeLook) window.__globeLook(city.ll[0], city.ll[1]);
+    var skipGlobe = pwaView();
+    if(!skipGlobe && appEl) appEl.classList.add('globe-focus');
+    var spinMs = skipGlobe ? 0 : (reducedMotion() ? 800 : 5000);
+    window.__spinBoost = skipGlobe || reducedMotion() ? 0 : 0.042;
+    if(!skipGlobe && window.__globeLook) window.__globeLook(city.ll[0], city.ll[1]);
     var leafletReady = loadLeaflet().catch(function(){
       if(window.GOO && GOO.Notify) GOO.Notify.toast({ tone:'amber', title:'Map tiles', sub:'Leaflet failed to load. Check the network.', n:'!' });
     });
@@ -800,16 +809,17 @@
         setTimeout(function(){
           if(map){
             map.invalidateSize();
-            flyToCity(city, reducedMotion() ? 0 : 2.4);
+            flyToCity(city, reducedMotion() || skipGlobe ? 0 : 2.4);
           }
           if(appEl) appEl.classList.remove('globe-focus');
           renderRoadmap();
           cinematic = false;
           bumpIdle();
-        }, 720);
+        }, skipGlobe ? 80 : 720);
       });
     }
-    setTimeout(showWorldThenCity, spinMs);
+    if(spinMs) setTimeout(showWorldThenCity, spinMs);
+    else showWorldThenCity();
   }
 
   function closeMap(){

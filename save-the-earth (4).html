@@ -58,12 +58,12 @@
   --card-h:15.1%;
   --card-gap:1.36%;
   --radius:16px;
-  --rail-w:56px;
+  --rail-w:44px;
   --rail-hit:28px;
   --rail-glyph:18px;
-  --rail-gap:6px;
+  --rail-gap:8px;
   --rail-cluster:18px;
-  --dock-left:calc(var(--rail-w) + 12px);
+  --dock-left:calc(var(--rail-w) + 14px);
   --dock-bottom:20px;
   --hud:36px;
 }
@@ -131,7 +131,7 @@ html, body, a, button, .card{ cursor:none; }
   background:var(--rail-veil);
   z-index:8;
   display:flex; flex-direction:column; align-items:center;
-  padding:14px 0 16px;
+  padding:14px 0 18px;
 }
 .rail .logo{
   position:absolute; left:50%; top:14px; transform:translateX(-50%);
@@ -184,7 +184,7 @@ html, body, a, button, .card{ cursor:none; }
   width:var(--rail-glyph); height:var(--rail-glyph);
   min-width:0; min-height:0;
   display:block;
-  fill:none; stroke:#fff; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
+  fill:#fff; stroke:none;
 }
 
 /* Watch Video tag-out: blue bar, uppercase label, square color chip */
@@ -216,7 +216,7 @@ html, body, a, button, .card{ cursor:none; }
 }
 .tip-ico svg{
   width:18px; height:18px; min-width:0; min-height:0; display:block;
-  fill:none; stroke:#fff; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;
+  fill:#fff; stroke:none;
 }
 @media (max-width:760px){
   .icon-tip{ font-size:12px; height:38px; min-height:38px; padding:3px 3px 3px 14px; }
@@ -547,12 +547,12 @@ button.uxrow{
 .search-hits .empty{ padding:12px 14px; font-size:12px; color:#6b7268; }
 
 .gctrl{
-  position:fixed; left:calc(var(--dock-left) + var(--hud) + 8px); bottom:var(--dock-bottom); z-index:16;
+  position:fixed; left:var(--dock-left); bottom:calc(var(--dock-bottom) + var(--hud) + 10px); z-index:16;
   display:flex; flex-direction:row; align-items:center; gap:8px;
 }
 .app.detail .gctrl{ opacity:0; pointer-events:none; }
 .app.globe-focus .gctrl{
-  left:calc(var(--dock-left) + var(--hud) + 8px); top:auto; bottom:var(--dock-bottom); transform:none; flex-direction:row; opacity:1; pointer-events:auto; z-index:16;
+  left:var(--dock-left); top:auto; bottom:calc(var(--dock-bottom) + var(--hud) + 10px); transform:none; flex-direction:row; opacity:1; pointer-events:auto; z-index:16;
 }
 .gctrl button{
   width:var(--hud); height:var(--hud); border:1px solid rgba(255,255,255,.55);
@@ -570,13 +570,13 @@ button.uxrow{
 .gctrl .compass-fab svg polygon{ fill:#12202c; stroke:none; }
 .gctrl button:active{ transform:scale(.94); }
 .glayers{
-  position:fixed; left:calc(var(--dock-left) + var(--hud) + 8px); top:auto; bottom:calc(var(--dock-bottom) + var(--hud) + 8px); z-index:17;
+  position:fixed; left:var(--dock-left); top:auto; bottom:calc(var(--dock-bottom) + (var(--hud) + 10px) * 2); z-index:17;
   display:none; min-width:180px; background:#fff; padding:6px;
   box-shadow:0 14px 32px rgba(0,16,40,.24);
   border-radius:16px;
 }
 .glayers.open{ display:block; }
-.app.globe-focus .glayers{ left:calc(var(--dock-left) + var(--hud) + 8px); bottom:calc(var(--dock-bottom) + var(--hud) + 8px); transform:none; }
+.app.globe-focus .glayers{ left:var(--dock-left); bottom:calc(var(--dock-bottom) + (var(--hud) + 10px) * 2); transform:none; }
 .glayers button{
   display:flex; align-items:center; gap:8px; width:100%;
   border:none; background:#fff; padding:8px 10px; cursor:pointer;
@@ -587,7 +587,7 @@ button.uxrow{
 .glayers i{ display:block; font-style:normal; font-size:9px; color:#6b7268; letter-spacing:.06em; }
 
 /* ------------------------------------------------------------ home view */
-.hero{ position:absolute; left:10.5%; top:13.9%; width:31%; z-index:6; transition:opacity .28s ease; }
+.hero{ position:absolute; left:calc(var(--rail-w) + 16px); top:13.9%; width:min(26%, 360px); z-index:6; transition:opacity .28s ease; }
 .hero h1{
   margin:0; font-size:var(--t-hero); font-weight:700;
   line-height:.97;                    /* measured: 24px ascender, 28px pitch */
@@ -1157,6 +1157,127 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
   .terra-layers{ display:none; }
   .terra-layers.open{ display:block; }
 }
+
+/* Phone PWA iframe only — laptop / desktop web chrome is unchanged. */
+@media (max-width: 760px){
+  html.embed{
+    --pwa-gutter:14px;
+    --pwa-hit:44px;
+    --pwa-gap:10px;
+    --pwa-top:max(12px, env(safe-area-inset-top));
+  }
+  html.embed .n-bell{
+    top:var(--pwa-top) !important;
+    right:var(--pwa-gutter) !important;
+    width:var(--pwa-hit);
+    height:var(--pwa-hit);
+  }
+  html.embed .gsearch{
+    left:calc(var(--pwa-gutter) + var(--pwa-hit) + var(--pwa-gap)) !important;
+    right:calc(var(--pwa-gutter) + var(--pwa-hit) + var(--pwa-gap)) !important;
+    top:var(--pwa-top) !important;
+    width:auto !important;
+    transform:none !important;
+    z-index:40;
+  }
+  html.embed .gsearch input{ height:var(--pwa-hit); border-radius:22px; }
+  html.embed .gctrl,
+  html.embed .app.globe-focus .gctrl{
+    left:calc(var(--pwa-gutter) + var(--pwa-hit) + var(--pwa-gap)) !important;
+    right:calc(var(--pwa-gutter) + var(--pwa-hit) + var(--pwa-gap)) !important;
+    top:calc(var(--pwa-top) + var(--pwa-hit) + var(--pwa-gap)) !important;
+    bottom:auto !important;
+    transform:none !important;
+    z-index:16;
+    justify-content:flex-start;
+  }
+  html.embed .gctrl .compass-fab{ display:none !important; }
+  html.embed .gctrl button{ width:var(--pwa-hit); height:var(--pwa-hit); }
+  html.embed .glayers,
+  html.embed .app.globe-focus .glayers{
+    left:calc(var(--pwa-gutter) + var(--pwa-hit) + var(--pwa-gap)) !important;
+    top:calc(var(--pwa-top) + (var(--pwa-hit) + var(--pwa-gap)) * 2) !important;
+    bottom:auto !important;
+  }
+  html.embed .hero{
+    left:var(--pwa-gutter);
+    right:var(--pwa-gutter);
+    width:auto;
+    top:calc(var(--pwa-top) + (var(--pwa-hit) + var(--pwa-gap)) * 2 + 8px);
+  }
+  html.embed .uxmodal{
+    align-items:flex-start;
+    padding:calc(var(--pwa-top) + var(--pwa-hit) + 12px) var(--pwa-gutter) 16px;
+  }
+  html.embed .uxcard{
+    width:100%;
+    height:auto;
+    max-height:calc(100dvh - 88px);
+    flex-direction:column;
+    overflow:auto;
+  }
+  html.embed .uxcard-right,
+  html.embed .uxcard-pager,
+  html.embed .uxhero-arrow,
+  html.embed .uxcard-menu,
+  html.embed .uxcard-bottom{ display:none !important; }
+  html.embed .uxclose-pwa{
+    display:flex !important;
+    position:absolute;
+    right:14px;
+    top:14px;
+    z-index:8;
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:18px;
+    background:#12181f;
+    color:#fff;
+    align-items:center;
+    justify-content:center;
+  }
+  html.embed .uxclose-pwa svg{ width:16px; height:16px; stroke:#fff; fill:none; stroke-width:2; }
+  html.embed .uxcard-left{ padding:20px 18px 18px; }
+  html.embed .uxcard-brand{ padding-right:44px; }
+  html.embed .ux-ledger-btns{ display:none; flex-direction:column; gap:10px; margin-top:14px; }
+  html.embed .ux-ledger-btns.show{ display:flex; }
+  html.embed .ux-ledger-btns .ux-checkout{ width:100%; }
+  html.embed .ux-checkout-ghost{ background:#e8e8e6; color:#12181f; }
+  html.embed .ux-ledger-sheet{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:120;
+    align-items:flex-end;
+    justify-content:center;
+    background:rgba(3,10,20,.45);
+  }
+  html.embed .ux-ledger-sheet.open{ display:flex; }
+  html.embed .ux-ledger-card{
+    position:relative;
+    width:calc(100% - 28px);
+    max-height:70dvh;
+    overflow:auto;
+    background:#fff;
+    border-radius:16px 16px 0 0;
+    padding:18px 16px 24px;
+  }
+  html.embed .ux-ledger-card h3{ margin:0 44px 12px 0; font:700 18px/1.2 'Space Grotesk',sans-serif; color:#12181f; }
+  html.embed .ux-ledger-x{
+    position:absolute; right:12px; top:12px;
+    width:36px; height:36px; border:none; border-radius:18px;
+    background:#12181f; color:#fff; font-size:22px; line-height:36px;
+  }
+  html.embed .ux-ledger-card ul{ list-style:none; margin:0; padding:0; }
+  html.embed .ux-ledger-card li{
+    display:flex; justify-content:space-between; gap:10px;
+    padding:12px 0; border-bottom:1px solid #ececec;
+    font:600 13px/1.3 'Space Grotesk',sans-serif; color:#12181f;
+  }
+  html.embed .ux-ledger-card li span{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  html.embed .ux-ledger-card li i{ font-style:normal; color:#6b7268; font-size:11px; font-weight:500; }
+  html.embed .ux-ledger-card li b{ font:700 13px/1 'Space Grotesk',sans-serif; white-space:nowrap; }
+}
 </style>
 </head>
 <body>
@@ -1183,21 +1304,21 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
     <div class="icons" id="icons">
       <div class="icon-group">
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Wallet" style="--ico:#16a34a">
-            <svg viewBox="0 0 24 24"><path d="M21 8H5a2 2 0 0 1 0-4h13v4"/><path d="M3 8v11a2 2 0 0 0 2 2h16v-6"/><path d="M17 13.5h4v3h-4a1.5 1.5 0 0 1 0-3Z"/></svg>
+          <button class="icon-btn" type="button" aria-label="Wallet">
+            <svg viewBox="0 0 24 24"><path d="M3 7.2C3 5.7 4.2 4.5 5.7 4.5H20.5v2.4H5.7a.7.7 0 0 0 0 1.4H21V19H5.7A2.7 2.7 0 0 1 3 16.3V7.2Zm14.6 6.1a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7Z"/></svg>
           </button>
           <div class="icon-tip" data-card="wallet">
             <span>Wallet</span>
-            <span class="tip-ico" style="background:#e8922a"><svg viewBox="0 0 24 24"><path d="M21 8H5a2 2 0 0 1 0-4h13v4"/><path d="M3 8v11a2 2 0 0 0 2 2h16v-6"/><path d="M17 13.5h4v3h-4a1.5 1.5 0 0 1 0-3Z"/></svg></span>
+            <span class="tip-ico" style="background:#e8922a"><svg viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M3 7.2C3 5.7 4.2 4.5 5.7 4.5H20.5v2.4H5.7a.7.7 0 0 0 0 1.4H21V19H5.7A2.7 2.7 0 0 1 3 16.3V7.2Zm14.6 6.1a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7Z"/></svg></span>
           </div>
         </div>
         <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Milestone" style="--ico:#7c5cff">
-            <svg viewBox="0 0 24 24"><polygon points="1 6 1 21 8 18 16 21 23 18 23 3 16 6 8 3 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg>
+          <button class="icon-btn" type="button" aria-label="Milestone">
+            <svg viewBox="0 0 24 24"><path d="M7 22V3h.5L19 8.4 7.5 13.7H7V22h2.2v-6.4Z"/></svg>
           </button>
           <div class="icon-tip" data-card="milestone">
             <span>Milestone</span>
-            <span class="tip-ico" style="background:#e8922a"><svg viewBox="0 0 24 24"><polygon points="1 6 1 21 8 18 16 21 23 18 23 3 16 6 8 3 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg></span>
+            <span class="tip-ico" style="background:#e8922a"><svg viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M7 22V3h.5L19 8.4 7.5 13.7H7V22h2.2v-6.4Z"/></svg></span>
           </div>
         </div>
       </div>
@@ -1285,6 +1406,9 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
 
 <div class="uxmodal" id="uxmodal">
   <div class="uxcard" id="uxcard">
+    <button class="uxclose-pwa" type="button" id="uxClosePwa" aria-label="Close">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
     <div class="uxcard-left">
       <div class="uxcard-brand"><span class="dot"></span>CBC Notebooks.</div>
       <div class="uxcard-idx">
@@ -1306,6 +1430,10 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
           <span class="ux-checkout-spin" aria-hidden="true"></span>
           <span class="ux-checkout-label">Checkout</span>
         </button>
+      </div>
+      <div class="ux-ledger-btns" id="uxLedgerBtns" hidden>
+        <button class="ux-checkout" type="button" data-ledger="summary">Ledger Summary</button>
+        <button class="ux-checkout ux-checkout-ghost" type="button" data-ledger="history">View Ledger History</button>
       </div>
       <div class="uxcard-bottom">
         <button class="uxpill" type="button" id="uxPill">
@@ -1356,6 +1484,13 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
         </button>
       </div>
       <div class="uxtoast" id="uxToast"></div>
+    </div>
+  </div>
+  <div class="ux-ledger-sheet" id="uxLedgerSheet" hidden>
+    <div class="ux-ledger-card">
+      <button type="button" class="ux-ledger-x" id="uxLedgerClose" aria-label="Close ledger list">×</button>
+      <h3 id="uxLedgerTitle">Ledger</h3>
+      <ul id="uxLedgerList"></ul>
     </div>
   </div>
 </div>

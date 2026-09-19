@@ -60,7 +60,7 @@
     align-items:flex-end;
     justify-content:flex-end;
     gap: clamp(8px, 1.4vh, 16px);
-    padding-top: max(72px, calc(env(safe-area-inset-top) + 52px));
+    padding-top: max(24px, calc(env(safe-area-inset-top) + 12px));
     padding-right: clamp(14px, 4vw, 28px);
     padding-bottom: max(16px, env(safe-area-inset-bottom));
     padding-left: clamp(14px, 4vw, 28px);
@@ -72,6 +72,7 @@
     );
   }
 
+  .headline, .subtext{ display:none !important; }
   .info{
     display:flex;
     flex-direction:column;
@@ -80,7 +81,7 @@
     color:var(--ink);
     width:100%;
     max-width:min(100%, 560px);
-    flex:0 1 auto;
+    flex:0 0 auto;
     min-height:0;
   }
 
@@ -303,7 +304,7 @@
 
     <div class="divider"></div>
 
-    <div class="pay-card" id="pwaPayCard">
+    <div class="pay-card" id="pwaFeatureCard">
       <div class="tpop-h">
         <span class="tpop-rank">$</span>
         <div><b>RESTORATION CREDIT</b><i>Stripe Checkout · treasury</i></div>
