@@ -128,6 +128,8 @@
     }
   }
   window.__spin = spin;
+  var pwaGlobe = window.GOO && GOO.Device && (GOO.Device.embed || GOO.Device.fromPwa);
+  var spinRate = pwaGlobe ? 0.0044 : 0.0019;
 
   function latLonToVec(lat, lon, r){
     var phi = (90 - lat) * Math.PI / 180;
@@ -187,8 +189,9 @@
       spin.rotation.y += dy * 0.07;
       var tx = (aim.x) - tilt.rotation.x;
       tilt.rotation.x += tx * 0.07;
+      if(Math.abs(dy) < 0.012 && Math.abs(tx) < 0.012) window.__globeAim = null;
     } else {
-      spin.rotation.y += 0.0019 + (window.__spinBoost || 0);
+      spin.rotation.y += spinRate + (window.__spinBoost || 0);
     }
     spin.updateMatrixWorld(true);
     tilt.updateMatrixWorld(true);
@@ -214,6 +217,7 @@
   addEventListener('pointerdown', function(){ lastPtr = Date.now(); }, { passive:true });
   setInterval(function(){
     if(Date.now() - lastPtr < 12000) return;
+    if(pwaGlobe) return;
     if(document.body.classList.contains('terra-open') || document.body.classList.contains('tut-on')) return;
     if(document.getElementById('app') && document.getElementById('app').classList.contains('globe-focus')) return;
     var comp = document.getElementById('goCompass');

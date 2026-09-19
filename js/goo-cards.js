@@ -132,7 +132,7 @@ addEventListener('pointerdown', function(e){
   setTimeout(function(){ r.remove(); }, 640);
 }, {passive:true});
 document.addEventListener('pointerover', function(e){
-  cur.classList.toggle('hot', !!(e.target.closest && e.target.closest('.card,.icon-btn,.icon-tip,.back,.nav a,.uxrow-btn,.uxclose,.uxaction,.gctrl button,.gpin,.rm-node,.terra-sbtn,.terra-iconbtn')));
+  cur.classList.toggle('hot', !!(e.target.closest && e.target.closest('.card,.icon-btn,.icon-tip,.back,.nav a,.uxrow-btn,.uxclose,.uxaction,.gctrl button,.gpin,.rm-node,.rm-close,.rm-tl-step,.terra-sbtn,.terra-iconbtn')));
 });
 
 /* ------------------------------------------------------- sidebar icon tips */
@@ -279,6 +279,8 @@ document.addEventListener('pointerover', function(e){
       ], tags:['Project Delta Audit','Project Gamma Audit','Project Beta Audit'], history:'View Detailed Log' }
   };
 
+  var CARD_IDS = Object.keys(DATA);
+
   var modal   = document.getElementById('uxmodal');
   var card    = document.getElementById('uxcard');
   var elNum   = document.getElementById('uxNum');
@@ -292,6 +294,11 @@ document.addEventListener('pointerover', function(e){
   var elHistoryLabel = document.getElementById('uxHistoryLabel');
   var stepUp  = document.getElementById('uxStepUp');
   var stepDown= document.getElementById('uxStepDown');
+  var pagerUp = document.getElementById('uxPagerUp');
+  var pagerDown = document.getElementById('uxPagerDown');
+  var dotsEl  = document.getElementById('uxDots');
+  var prevCard= document.getElementById('uxPrevCard');
+  var nextCard= document.getElementById('uxNextCard');
   var toast   = document.getElementById('uxToast');
   var closeBtn= document.getElementById('uxClose');
 
@@ -325,10 +332,34 @@ document.addEventListener('pointerover', function(e){
   function updateStepState(){
     var d = DATA[current];
     elPillLabel.textContent = d.tags[tagIndex];
-    stepUp.disabled = tagIndex === 0;
-    stepDown.disabled = tagIndex === d.tags.length - 1;
-    stepUp.classList.toggle('active', tagIndex > 0);
-    stepDown.classList.toggle('active', tagIndex < d.tags.length - 1);
+    var atStart = tagIndex === 0;
+    var atEnd = tagIndex === d.tags.length - 1;
+    stepUp.disabled = atStart;
+    stepDown.disabled = atEnd;
+    stepUp.classList.toggle('active', !atStart);
+    stepDown.classList.toggle('active', !atEnd);
+    if (pagerUp) pagerUp.disabled = atStart;
+    if (pagerDown) pagerDown.disabled = atEnd;
+    if (dotsEl) {
+      dotsEl.innerHTML = d.tags.map(function (_, i) {
+        return '<i class="' + (i === tagIndex ? 'on' : '') + '"></i>';
+      }).join('');
+    }
+  }
+
+  function shiftTag(dir){
+    var d = DATA[current];
+    if (!d) return;
+    var next = tagIndex + dir;
+    if (next < 0 || next >= d.tags.length) return;
+    tagIndex = next;
+    updateStepState();
+  }
+
+  function cycleCard(dir){
+    var i = CARD_IDS.indexOf(current);
+    if (i < 0) return;
+    openCard(CARD_IDS[(i + dir + CARD_IDS.length) % CARD_IDS.length]);
   }
 
   function openCard(id){
@@ -366,13 +397,12 @@ document.addEventListener('pointerover', function(e){
   closeBtn.addEventListener('click', closeCard);
   modal.addEventListener('click', function(ev){ if(ev.target === modal) closeCard(); });
 
-  stepUp.addEventListener('click', function(){
-    if(tagIndex > 0){ tagIndex--; updateStepState(); }
-  });
-  stepDown.addEventListener('click', function(){
-    var d = DATA[current];
-    if(tagIndex < d.tags.length - 1){ tagIndex++; updateStepState(); }
-  });
+  stepUp.addEventListener('click', function(){ shiftTag(-1); });
+  stepDown.addEventListener('click', function(){ shiftTag(1); });
+  if (pagerUp) pagerUp.addEventListener('click', function(){ shiftTag(-1); });
+  if (pagerDown) pagerDown.addEventListener('click', function(){ shiftTag(1); });
+  if (prevCard) prevCard.addEventListener('click', function(){ cycleCard(-1); });
+  if (nextCard) nextCard.addEventListener('click', function(){ cycleCard(1); });
 
   elRows.addEventListener('click', function(ev){
     var t = ev.target.closest('.uxtoggle');

@@ -224,6 +224,46 @@
       geometry:{ type:'Polygon', coordinates:[ring] } };
   }
 
+  function cityBounds(c){
+    var pts = [[c.ll[0], c.ll[1]]];
+    var shore = COASTS[c.id];
+    if(shore && shore.length){
+      for(var i=0;i<shore.length;i++) pts.push(shore[i]);
+    }
+    var outer = fan(c.ll[0], c.ll[1], c.ocean, 38, Math.PI * 1.35, 14, false);
+    for(var j=0;j<outer.length;j++) pts.push(outer[j]);
+    if(c.tags && c.tags.indexOf('coral') !== -1){
+      var reef = fan(c.ll[0], c.ll[1], c.ocean, 12, Math.PI * 0.7, 8, false);
+      for(var k=0;k<reef.length;k++) pts.push(reef[k]);
+    }
+    return L.latLngBounds(pts);
+  }
+
+  function cityPad(){
+    var cycle = overlay.classList.contains('cycle-on');
+    return {
+      paddingTopLeft: cycle ? [360, 92] : [18, 92],
+      paddingBottomRight: [92, cycle ? 108 : 196]
+    };
+  }
+
+  function flyToCity(c, duration){
+    if(!map || !c) return;
+    var pad = cityPad();
+    var opts = {
+      paddingTopLeft: pad.paddingTopLeft,
+      paddingBottomRight: pad.paddingBottomRight,
+      maxZoom: 12,
+      easeLinearity: 0.22
+    };
+    if(duration === 0){
+      map.fitBounds(cityBounds(c), opts);
+      return;
+    }
+    opts.duration = duration == null ? 1.2 : duration;
+    map.flyToBounds(cityBounds(c), opts);
+  }
+
   function eduIcon(s){
     var cls = s.type === 'uni' ? 't-edu uni' : 't-edu';
     var html = '<div class="' + cls + '"><svg viewBox="0 0 24 24">' + EDU_GLYPH[s.type] + '</svg></div>';
@@ -378,12 +418,8 @@
       m.bindTooltip(c.name, { direction:'top', offset:[0,-16], opacity:0.95 });
       m.bindPopup(popupHtml(c), { maxWidth:280, className:'terra-pop' });
       m.on('click', function(){
-        var shore = COASTS[c.id];
-        if(shore && shore.length){
-          map.flyToBounds(L.latLngBounds(shore.concat([c.ll])), { padding:[48, 90], maxZoom:13, duration:0.6 });
-        } else {
-          map.flyTo(c.ll, 10, { duration:0.55 });
-        }
+        window.__chosenCity = c.id;
+        flyToCity(c, 0.7);
       });
       m.on('popupopen', function(){
         var root = m.getPopup().getElement();
@@ -480,6 +516,22 @@
       ' A'+r0+','+r0+' 0 0 0 '+i0[0].toFixed(1)+','+i0[1].toFixed(1)+' Z';
   }
   var checkedPhases = {};
+  var roadmapView = 'path';
+
+  function setRoadmapView(mode){
+    roadmapView = mode === 'cycle' ? 'cycle' : 'path';
+    overlay.classList.toggle('path-on', roadmapView === 'path');
+    overlay.classList.toggle('cycle-on', roadmapView === 'cycle');
+    var pathBtn = document.getElementById('terraViewPath');
+    var cycleBtn = document.getElementById('terraViewCycle');
+    if(pathBtn) pathBtn.classList.toggle('active', roadmapView === 'path');
+    if(cycleBtn) cycleBtn.classList.toggle('active', roadmapView === 'cycle');
+    hideRmTip();
+    renderRoadmap();
+    if(map && overlay.classList.contains('open') && window.__chosenCity){
+      flyToCity(cityById(window.__chosenCity), 0.45);
+    }
+  }
 
   function showRmTip(title, sub, x, y){
     var tip = document.getElementById('rmTip');
@@ -494,7 +546,34 @@
     if(tip) tip.classList.remove('show');
   }
 
-  function renderRoadmap(){
+  function togglePhase(i){
+    checkedPhases[i] = !checkedPhases[i];
+    renderRoadmap();
+    if(window.GOO && GOO.Notify) GOO.Notify.toast({
+      tone: checkedPhases[i] ? 'green' : 'amber',
+      title: checkedPhases[i] ? ('Phase 0' + PHASES[i].n + ' checked') : ('Phase 0' + PHASES[i].n + ' open'),
+      sub: PHASES[i].title,
+      n: '0' + PHASES[i].n
+    });
+  }
+
+  function bindPhaseHover(el, host){
+    el.addEventListener('mouseenter', function(ev){
+      var p = PHASES[+el.dataset.i];
+      var box = host.getBoundingClientRect();
+      showRmTip('PHASE 0'+p.n+' · '+p.short, p.title+' — '+p.sub, ev.clientX - box.left, ev.clientY - box.top - 12);
+    });
+    el.addEventListener('mousemove', function(ev){
+      var tipEl = document.getElementById('rmTip');
+      if(!tipEl || !tipEl.classList.contains('show')) return;
+      var box = host.getBoundingClientRect();
+      tipEl.style.left = (ev.clientX - box.left) + 'px';
+      tipEl.style.top = (ev.clientY - box.top - 12) + 'px';
+    });
+    el.addEventListener('mouseleave', hideRmTip);
+  }
+
+  function renderCycle(){
     var host = document.getElementById('rmCycle');
     if(!host) return;
     var cx = 170, cy = 170, r0 = 62, r1 = 132;
@@ -502,51 +581,62 @@
     PHASES.forEach(function(p, i){
       var a0 = -112.5 + i * 45, a1 = a0 + 45, mid = a0 + 22.5;
       var on = !!checkedPhases[i];
-      var fill = on ? '#c9f8d8' : (i % 2 === 0 ? '#ececec' : '#e4e4e4');
+      var fill = on ? '#14532d' : (i % 2 === 0 ? '#e4efe8' : '#d7e6dc');
       segs += '<path class="rm-seg'+(on?' on':'')+'" data-i="'+i+'" d="'+donutSeg(cx,cy,r0,r1,a0,a1)+'" fill="'+fill+'"></path>';
       var np = polar(cx,cy,118, mid);
-      nums += '<text x="'+np[0].toFixed(1)+'" y="'+(np[1]+4).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" font-family="Space Grotesk,sans-serif">'+p.n+'.</text>';
+      nums += '<text x="'+np[0].toFixed(1)+'" y="'+(np[1]+4).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="700" fill="'+(on?'#ecfdf5':'#5f6f66')+'" font-family="Space Grotesk,sans-serif">'+p.n+'.</text>';
       var ip = polar(cx,cy,92, mid);
-      icons += '<g class="rm-seg-ico" data-i="'+i+'" transform="translate('+(ip[0]-12).toFixed(1)+','+(ip[1]-12).toFixed(1)+')" fill="none" stroke="'+(on?'#178a4a':'#4b5563')+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+PHASE_ICON[p.icon]+'</g>';
+      icons += '<g class="rm-seg-ico" data-i="'+i+'" transform="translate('+(ip[0]-12).toFixed(1)+','+(ip[1]-12).toFixed(1)+')" fill="none" stroke="'+(on?'#ecfdf5':'#14532d')+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+PHASE_ICON[p.icon]+'</g>';
       var aa0 = polar(cx,cy,146, a1-10), aa1 = polar(cx,cy,146, a1+8);
       var tip = polar(cx,cy,146, a1+14);
-      arrows += '<path d="M'+aa0[0].toFixed(1)+','+aa0[1].toFixed(1)+' A146,146 0 0 1 '+aa1[0].toFixed(1)+','+aa1[1].toFixed(1)+'" fill="none" stroke="#8ec4bc" stroke-width="7" stroke-linecap="round"/>';
+      arrows += '<path d="M'+aa0[0].toFixed(1)+','+aa0[1].toFixed(1)+' A146,146 0 0 1 '+aa1[0].toFixed(1)+','+aa1[1].toFixed(1)+'" fill="none" stroke="#166534" stroke-width="7" stroke-linecap="round"/>';
       var ang = (a1+12)*Math.PI/180;
       var tx = tip[0], ty = tip[1];
       var lx = tx - 7*Math.cos(ang-0.7), ly = ty - 7*Math.sin(ang-0.7);
       var rx = tx - 7*Math.cos(ang+0.7), ry = ty - 7*Math.sin(ang+0.7);
-      arrows += '<polygon points="'+tx.toFixed(1)+','+ty.toFixed(1)+' '+lx.toFixed(1)+','+ly.toFixed(1)+' '+rx.toFixed(1)+','+ry.toFixed(1)+'" fill="#8ec4bc"/>';
+      arrows += '<polygon points="'+tx.toFixed(1)+','+ty.toFixed(1)+' '+lx.toFixed(1)+','+ly.toFixed(1)+' '+rx.toFixed(1)+','+ry.toFixed(1)+'" fill="#166534"/>';
     });
     host.innerHTML =
       '<svg class="rm-ring" viewBox="0 0 340 340">'+segs+nums+icons+arrows+'</svg>'+
       '<div class="rm-hub"><b>FIELD OPERATIONS<br>ROADMAP</b></div>';
-
-    function togglePhase(i){
-      checkedPhases[i] = !checkedPhases[i];
-      renderRoadmap();
-      if(window.GOO && GOO.Notify) GOO.Notify.toast({
-        tone: checkedPhases[i] ? 'green' : 'amber',
-        title: checkedPhases[i] ? ('Phase 0' + PHASES[i].n + ' checked') : ('Phase 0' + PHASES[i].n + ' open'),
-        sub: PHASES[i].title,
-        n: '0' + PHASES[i].n
-      });
-    }
+    var card = document.getElementById('terraCycleCard');
     host.querySelectorAll('.rm-seg').forEach(function(el){
       el.addEventListener('click', function(){ togglePhase(+el.dataset.i); });
-      el.addEventListener('mouseenter', function(ev){
-        var p = PHASES[+el.dataset.i];
-        var box = document.getElementById('terraRoadmap').getBoundingClientRect();
-        showRmTip('PHASE 0'+p.n+' · '+p.short, p.title+' — '+p.sub, ev.clientX - box.left, ev.clientY - box.top - 12);
-      });
-      el.addEventListener('mousemove', function(ev){
-        var tipEl = document.getElementById('rmTip');
-        if(!tipEl || !tipEl.classList.contains('show')) return;
-        var box = document.getElementById('terraRoadmap').getBoundingClientRect();
-        tipEl.style.left = (ev.clientX - box.left) + 'px';
-        tipEl.style.top = (ev.clientY - box.top - 12) + 'px';
-      });
-      el.addEventListener('mouseleave', hideRmTip);
+      if(card) bindPhaseHover(el, card);
     });
+  }
+
+  function renderPath(){
+    var host = document.getElementById('rmPath');
+    if(!host) return;
+    var done = 0;
+    PHASES.forEach(function(p, i){ if(checkedPhases[i]) done += 1; });
+    var fillPct = Math.max(0, Math.min(100, (done / Math.max(PHASES.length - 1, 1)) * 100));
+    var steps = PHASES.map(function(p, i){
+      var on = !!checkedPhases[i];
+      var now = !on && (i === 0 || checkedPhases[i - 1]);
+      var cls = 'rm-tl-step' + (on ? ' on' : '') + (now ? ' now' : '');
+      var mark = on ? '✓' : (now ? p.n : '');
+      return '<button type="button" class="'+cls+'" data-i="'+i+'">'+
+        '<span class="lab">'+p.short+'</span>'+
+        '<span class="dot">'+mark+'</span>'+
+        '<span class="sub">'+p.title+'</span>'+
+      '</button>';
+    }).join('');
+    host.innerHTML =
+      '<div class="rm-tl">'+
+        '<i class="rm-tl-line"></i>'+
+        '<i class="rm-tl-fill" style="width:'+(fillPct * 0.88).toFixed(1)+'%"></i>'+
+        steps+
+      '</div>';
+    host.querySelectorAll('.rm-tl-step').forEach(function(el){
+      el.addEventListener('click', function(){ togglePhase(+el.dataset.i); });
+    });
+  }
+
+  function renderRoadmap(){
+    renderCycle();
+    renderPath();
   }
 
   function cityById(id){
@@ -606,13 +696,17 @@
     var next = pool[Math.floor(Math.random() * pool.length)] || CITIES[0];
     tourLast = next.id;
     window.__chosenCity = next.id;
-    var steps = [4, 6, 8, 10, 12];
+    var steps = [4, 6, 8];
     var i = 0;
     function step(){
       if(!overlay.classList.contains('open') || cinematic) return;
+      if(i >= steps.length){
+        flyToCity(next, 1.4);
+        return;
+      }
       map.flyTo(next.ll, steps[i], { duration:1.2, easeLinearity:0.28 });
       i += 1;
-      if(i < steps.length) tourTimer = setTimeout(step, 1300);
+      tourTimer = setTimeout(step, 1300);
     }
     map.setView([12, 20], 2, { animate:false });
     tourTimer = setTimeout(step, 400);
@@ -650,7 +744,7 @@
       setTimeout(function(){
         if(map){
           map.invalidateSize();
-          map.flyTo(city.ll, 12, { duration: reducedMotion() ? 0.8 : 2.4, easeLinearity:0.22 });
+          flyToCity(city, reducedMotion() ? 0 : 2.4);
         }
         if(appEl) appEl.classList.remove('globe-focus');
         renderRoadmap();
@@ -684,10 +778,20 @@
   document.getElementById('terraClose').addEventListener('click', closeMap);
   document.getElementById('terraZoomIn').addEventListener('click', function(){ if(map) map.zoomIn(); });
   document.getElementById('terraZoomOut').addEventListener('click', function(){ if(map) map.zoomOut(); });
-  document.getElementById('terraCompass').addEventListener('click', function(){ if(map) fitAll(); });
+  document.getElementById('terraCompass').addEventListener('click', function(){
+    var c = cityById(window.__chosenCity);
+    if(c) flyToCity(c, 0.8);
+    else fitAll();
+  });
   var gpsBtn = document.getElementById('terraGpsCompass');
   if(gpsBtn) gpsBtn.addEventListener('click', function(){ if(window.GOO && GOO.Compass) GOO.Compass.show('map'); });
-  renderRoadmap();
+  var pathBtn = document.getElementById('terraViewPath');
+  var cycleBtn = document.getElementById('terraViewCycle');
+  var rmClose = document.getElementById('rmClose');
+  if(pathBtn) pathBtn.addEventListener('click', function(){ setRoadmapView('path'); });
+  if(cycleBtn) cycleBtn.addEventListener('click', function(){ setRoadmapView('cycle'); });
+  if(rmClose) rmClose.addEventListener('click', function(){ setRoadmapView('path'); });
+  setRoadmapView('path');
 
   ['pointerdown','wheel','keydown','touchstart'].forEach(function(ev){
     overlay.addEventListener(ev, bumpIdle, { passive:true });
@@ -699,7 +803,7 @@
   });
   bindCitySearch(document.getElementById('terraSearchIn'), document.getElementById('terraSearchHits'), function(c){
     window.__chosenCity = c.id;
-    if(map) map.flyTo(c.ll, 12, { duration:1.4, easeLinearity:0.22 });
+    if(map) flyToCity(c, 1.4);
   });
 
   var layersPanel = document.getElementById('terraLayers');

@@ -198,7 +198,10 @@
   }
 
   function applyViewQuery() {
-    if (Device.view === 'compass') setTimeout(function () { Compass.show(); }, 400);
+    if (Device.view === 'globe' && (Device.embed || Device.fromPwa)) {
+      window.__spinBoost = 0.002;
+      window.__globeAim = null;
+    }
     if (Device.view === 'map') {
       waitFor(function () { return typeof window.openTerraRoadmap === 'function'; }, function () {
         window.openTerraRoadmap();

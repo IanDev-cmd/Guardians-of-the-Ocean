@@ -77,7 +77,7 @@ html.embed .install-app{ display:none; }
 #installApple, #installPlay{ width:28px; height:28px; display:flex; align-items:center; justify-content:center; }
 
 .compass-fab{
-  position:fixed; left:7.2%; bottom:calc(3.4% + 56px); z-index:16;
+  position:fixed; left:calc(7.2% + 156px); bottom:calc(3.4% + 58px); z-index:16;
   width:46px; height:46px; border-radius:50%;
   border:1px solid rgba(255,255,255,.5); background:rgba(255,255,255,.94); color:#12202c;
   display:flex; align-items:center; justify-content:center;
