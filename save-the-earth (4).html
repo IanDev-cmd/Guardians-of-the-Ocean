@@ -59,6 +59,8 @@
   --card-h:15.1%;
   --card-gap:1.36%;
   --radius:16px;
+  --rail-w:max(52px, 4.26%);
+  --dock-left:calc(var(--rail-w) + 32px);
 }
 
 *{ box-sizing:border-box; }
@@ -120,47 +122,47 @@ html, body, a, button, .card{ cursor:none; }
 
 /* ----------------------------------------------------------------- rail */
 .rail{
-  position:absolute; left:0; top:0; bottom:0; width:max(52px, 4.26%);
+  position:absolute; left:0; top:0; bottom:0; width:var(--rail-w);
   background:var(--rail-veil);
   z-index:8;
 }
 .rail .logo{ position:absolute; left:50%; top:2.2%; transform:translateX(-50%); }
 .rail .logo svg{ width:1.7vw; height:1.7vw; min-width:13px; min-height:13px; display:block; }
 .rail .socials{
-  position:absolute; left:50%; top:84.9%; transform:translateX(-50%);
-  display:flex; flex-direction:column; align-items:center; gap:1.1vw;
+  position:absolute; left:50%; bottom:3.2%; top:auto; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:0.85vw;
 }
 .rail .socials a{ display:block; color:#fff; }
 .rail .socials svg{ width:.92vw; height:.92vw; min-width:9px; min-height:9px; opacity:.95; display:block; }
 
 /* ------------------------------------------------------- sidebar icon rail */
 .icons{
-  position:absolute; left:0; width:max(52px, 4.26%); top:10%; bottom:20%;
-  display:flex; flex-direction:column; justify-content:center; align-items:center;
-  gap:0.55vw; z-index:8;
+  position:absolute; left:0; width:var(--rail-w); top:8.5%; bottom:16%;
+  display:flex; flex-direction:column; justify-content:space-evenly; align-items:center;
+  gap:0; z-index:8;
 }
 .icon-group{
   display:contents;
 }
-.icon-wrap{ position:relative; display:block; }
+.icon-wrap{ position:relative; display:flex; align-items:center; justify-content:center; }
 .icon-btn{
   display:flex; align-items:center; justify-content:center;
-  width:clamp(28px, 2.6vw, 44px); height:clamp(28px, 2.6vw, 44px);
-  background:var(--ico, #2f8fd6); border:none; padding:0; margin:0;
+  width:clamp(30px, 2.8vw, 40px); height:clamp(30px, 2.8vw, 40px);
+  background:none; border:none; padding:0; margin:0;
   border-radius:0;
-  box-shadow:0 4px 10px rgba(0,16,40,.22);
+  box-shadow:none;
   -webkit-tap-highlight-color:transparent;
   transition:transform .16s ease, filter .16s ease;
 }
 .icon-btn:hover, .icon-wrap.show .icon-btn{
-  transform:translateY(-1px);
-  filter:brightness(1.08);
+  transform:scale(1.12);
+  filter:drop-shadow(0 0 8px rgba(170,220,255,.55));
 }
 .icon-btn svg{
-  width:58%; height:58%;
-  min-width:14px; min-height:14px;
+  width:74%; height:74%;
+  min-width:16px; min-height:16px;
   display:block;
-  fill:none; stroke:#fff; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;
+  fill:none; stroke:#eef6ff; stroke:url(#railIco); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
 }
 
 /* the popup that slides out beside a sidebar icon, styled after the
@@ -194,8 +196,8 @@ html, body, a, button, .card{ cursor:none; }
 }
 @media (max-width:760px){
   .icon-tip{ font-size:12px; height:34px; padding:0 8px 0 12px; }
-  .icon-btn{ width:36px; height:36px; }
-  .icon-btn svg{ width:20px; height:20px; }
+  .icon-btn{ width:34px; height:34px; }
+  .icon-btn svg{ width:22px; height:22px; }
   .tip-ico{ width:22px; height:22px; }
   .tip-ico svg{ width:12px; height:12px; }
 }
@@ -497,29 +499,31 @@ button.uxrow{
 .search-hits .empty{ padding:12px 14px; font-size:12px; color:#6b7268; }
 
 .gctrl{
-  position:fixed; left:7.2%; bottom:calc(3.4% + 58px); z-index:16;
+  position:fixed; left:var(--dock-left); bottom:calc(3.4% + 52px); z-index:16;
   display:flex; flex-direction:row; gap:8px;
 }
 .app.detail .gctrl{ opacity:0; pointer-events:none; }
 .app.globe-focus .gctrl{
-  left:7.2%; top:auto; bottom:calc(3.4% + 58px); transform:none; flex-direction:row; opacity:1; pointer-events:auto; z-index:16;
+  left:var(--dock-left); top:auto; bottom:calc(3.4% + 52px); transform:none; flex-direction:row; opacity:1; pointer-events:auto; z-index:16;
 }
 .gctrl button{
-  width:44px; height:44px; border:1px solid rgba(255,255,255,.5);
+  width:42px; height:42px; border:1px solid rgba(255,255,255,.55);
   background:rgba(255,255,255,.94); color:#12202c;
   display:flex; align-items:center; justify-content:center; padding:0;
-  border-radius:14px;
+  border-radius:16px;
+  -webkit-appearance:none; appearance:none;
   box-shadow:0 8px 20px rgba(0,16,40,.22);
 }
 .gctrl button svg{ width:18px; height:18px; stroke:#12202c; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .gctrl button:active{ transform:scale(.94); }
 .glayers{
-  position:fixed; left:7.2%; top:auto; bottom:calc(3.4% + 112px); z-index:17;
+  position:fixed; left:var(--dock-left); top:auto; bottom:calc(3.4% + 102px); z-index:17;
   display:none; min-width:180px; background:#fff; padding:6px;
   box-shadow:0 14px 32px rgba(0,16,40,.24);
+  border-radius:16px;
 }
 .glayers.open{ display:block; }
-.app.globe-focus .glayers{ left:7.2%; bottom:calc(3.4% + 112px); transform:none; }
+.app.globe-focus .glayers{ left:var(--dock-left); bottom:calc(3.4% + 102px); transform:none; }
 .glayers button{
   display:flex; align-items:center; gap:8px; width:100%;
   border:none; background:#fff; padding:8px 10px; cursor:pointer;
@@ -1005,6 +1009,15 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
 <div class="app" id="app">
 
   <div class="rail">
+    <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+      <defs>
+        <linearGradient id="railIco" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#7eb6ff"/>
+          <stop offset="55%" stop-color="#d7ebff"/>
+          <stop offset="100%" stop-color="#ffffff"/>
+        </linearGradient>
+      </defs>
+    </svg>
     <div class="logo">
       <svg viewBox="0 0 24 24" fill="#fff"><path d="M4 20c0-7 4.5-12.5 15-15-1 4.2-1.6 7.3-4 10.2C12.4 18.4 8.6 19.4 4 20Zm2.6-1.6c3.6-.7 6.4-1.7 8.3-4 1.6-2 2.2-4.1 2.8-6.6-7.6 2.4-10.3 6.6-11.1 10.6Z"/></svg>
     </div>
