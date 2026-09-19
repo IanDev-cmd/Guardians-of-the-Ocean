@@ -1,4 +1,4 @@
-const CACHE_NAME = 'guardians-ocean-v10';
+const CACHE_NAME = 'guardians-ocean-v11';
 const ASSETS = [
   './',
   './index.html',
@@ -13,6 +13,8 @@ const ASSETS = [
   './js/goo-map.js',
   './js/pwa-app.js',
   './manifest.webmanifest',
+  './assets/3d/earth-atmos.jpg',
+  './assets/3d/earth-night.jpg',
   './assets/3d/earth-preview.webp',
   './assets/maps/cities.json',
   './assets/maps/schools.geojson',

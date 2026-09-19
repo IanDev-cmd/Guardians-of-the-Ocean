@@ -28,9 +28,11 @@
   var segs = low ? 24 : mid ? 32 : 48;
   var renderer = new THREE.WebGLRenderer({ antialias:!low, alpha:true, powerPreference: low ? 'low-power' : 'default' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, low ? 1 : mid ? 1.25 : 1.5));
+  if(THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.domElement.style.opacity = '0';
+  renderer.domElement.style.transition = 'opacity .35s ease';
   mount.appendChild(renderer.domElement);
   var wrap = document.getElementById('globeWrap');
-  if(wrap) wrap.classList.add('globe-live');
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.45));
   var key = new THREE.DirectionalLight(0xffffff, 0.75);
@@ -80,33 +82,35 @@
   });
   spin.add(new THREE.Mesh(new THREE.SphereGeometry(R, segs, segs), mat));
 
+  function revealGlobe(){
+    renderer.domElement.style.opacity = '1';
+    if(wrap) wrap.classList.add('globe-live');
+  }
   function applyTexture(tex){
+    if(tex.anisotropy !== undefined) tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    if(THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
     mat.map = tex;
     mat.emissiveMap = tex;
     mat.emissiveIntensity = 0.30;   // lifts the shadow side without washing out
     mat.needsUpdate = true;
+    revealGlobe();
   }
-  applyTexture(fallbackTexture());
   var loader = new THREE.TextureLoader();
   loader.crossOrigin = 'anonymous';
   var TEX = {
-    default:'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',
-    night:'https://threejs.org/examples/textures/planets/earth_lights_2048.jpg',
-    marble:'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'
+    default:['assets/3d/earth-atmos.jpg','https://cdn.jsdelivr.net/npm/three-globe@2.31.1/example/img/earth-blue-marble.jpg'],
+    night:['assets/3d/earth-night.jpg','https://cdn.jsdelivr.net/npm/three-globe@2.31.1/example/img/earth-night.jpg'],
+    marble:['assets/3d/earth-atmos.jpg','https://cdn.jsdelivr.net/npm/three-globe@2.31.1/example/img/earth-blue-marble.jpg']
   };
-  if(!saveData && !low) loader.load(TEX.default, applyTexture, undefined, function(){});
+  function loadChain(urls, i){
+    i = i || 0;
+    if(!urls || i >= urls.length) return;
+    loader.load(urls[i], applyTexture, undefined, function(){ loadChain(urls, i + 1); });
+  }
+  loadChain(TEX.default);
   window.__globeTex = function(key){
-    if(low && key === 'default') return;
-    var url = TEX[key] || TEX.default;
-    loader.load(url, applyTexture, undefined, function(){});
+    loadChain(TEX[key] || TEX.default);
   };
-  var idlePrefetch = window.requestIdleCallback || function(fn){ setTimeout(fn, 1800); };
-  idlePrefetch(function(){
-    if(saveData || low) return;
-    var img = new Image();
-    img.referrerPolicy = 'no-referrer';
-    img.src = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/1/2';
-  }, { timeout:2000 });
   window.__globeReady = true;
 
   // additive fresnel halo — the luminous edge the reference has

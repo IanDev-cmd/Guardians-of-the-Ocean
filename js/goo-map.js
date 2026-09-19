@@ -622,10 +622,18 @@
     var main = PHASES.slice(0, 6);
     var CHECK = '<path d="M6 12.2l3.2 3.2L18 8.2"/>';
     var FLAG = '<path d="M7 2h10l-2.6 4L17 10H7V21H5V2h2Z"/>';
+    var blurbs = [
+      'Local approval & community onboarding',
+      'Site reconnaissance & mapping',
+      'Volunteer & worker group deployment',
+      'Site cleanup & waste extraction',
+      'Waste bin & collection hub install',
+      'Waste audit, weighing & sorting'
+    ];
     var steps = main.map(function(p, i){
       var kind = i === 0 ? ' start' : i === 1 ? ' done' : '';
       var glyph = i === 1 ? CHECK : PHASE_ICON[p.icon];
-      var blurb = i === 0 ? 'Local Approval & Community...' : p.title;
+      var blurb = blurbs[i] || p.title;
       return '<button type="button" class="rm-tl-step'+kind+'" data-i="'+i+'">'+
         '<span class="lab">'+p.short+'</span>'+
         '<span class="dot"><svg viewBox="0 0 24 24">'+glyph+'</svg></span>'+
@@ -641,13 +649,13 @@
           '<span class="stem"></span>'+
           '<span class="mark"><svg viewBox="0 0 24 24">'+FLAG+'</svg></span>'+
           '<span class="lab">PAYOUT</span>'+
-          '<span class="sub">Treasury Payouts &amp; Stipend Disbursement</span>'+
+          '<span class="sub">Treasury payouts &amp; stipends</span>'+
         '</button>'+
         '<button type="button" class="rm-tl-flag late" data-i="7">'+
           '<span class="stem"></span>'+
           '<span class="mark"><svg viewBox="0 0 24 24">'+FLAG+'</svg></span>'+
           '<span class="lab">HASHSCAN</span>'+
-          '<span class="sub">On-Chain HashScan Audit &amp; Public Record</span>'+
+          '<span class="sub">On-chain HashScan public record</span>'+
         '</button>'+
       '</div>';
     host.querySelectorAll('[data-i]').forEach(function(el){
@@ -818,6 +826,8 @@
   if(pathBtn) pathBtn.addEventListener('click', function(){ setRoadmapView('path'); });
   if(cycleBtn) cycleBtn.addEventListener('click', function(){ setRoadmapView('cycle'); });
   if(rmClose) rmClose.addEventListener('click', function(){ setRoadmapView('path'); });
+  var rmPathClose = document.getElementById('rmPathClose');
+  if(rmPathClose) rmPathClose.addEventListener('click', closeMap);
   setRoadmapView('path');
 
   ['pointerdown','wheel','keydown','touchstart'].forEach(function(ev){
