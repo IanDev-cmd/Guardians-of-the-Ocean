@@ -190,8 +190,15 @@
     transition:stroke .18s ease;
   }
 
-  .pay-card{
+  .pay-stack{
     width: var(--grid-w);
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pay-card{
+    width: 100%;
     flex: 0 0 auto;
     background: rgba(255,255,255,.94);
     backdrop-filter: blur(14px);
@@ -304,25 +311,42 @@
 
     <div class="divider"></div>
 
-    <div class="pay-card" id="pwaFeatureCard">
-      <div class="tpop-h">
-        <span class="tpop-rank">$</span>
-        <div><b>RESTORATION CREDIT</b><i>Stripe Checkout · treasury</i></div>
-        <span class="tpop-ph" id="pwaPayLive">PAY</span>
-      </div>
-      <div class="tpop-kpis">
-        <div class="tpop-kpi"><b id="pwaBalOp">—</b><i>AVAILABLE</i></div>
-        <div class="tpop-kpi"><b id="pwaBalPend">12</b><i>PENDING</i></div>
-        <div class="tpop-kpi"><b id="pwaBalSplit">85/15</b><i>SPLIT</i></div>
-      </div>
-      <div class="tpop-fund" id="pwaBalFund">Field ops 85% · treasury 15% · HCS</div>
-      <label class="pay-email">
-        <input id="pwaPayEmail" type="email" autocomplete="email" placeholder="you@example.com">
-      </label>
-      <div class="tpop-cta">
-        <button type="button" class="pow" id="pwaCheckout">CHECKOUT</button>
-        <button type="button" class="hash" id="pwaWalletView">WALLET</button>
-      </div>
+    <div class="pay-stack" id="pwaFeatureCard">
+      <article class="pay-card">
+        <div class="tpop-h">
+          <span class="tpop-rank">F</span>
+          <div><b>RESTORATION FUND</b><i>Stripe treasury · database</i></div>
+          <span class="tpop-ph" id="pwaPayLive">LIVE</span>
+        </div>
+        <div class="tpop-kpis">
+          <div class="tpop-kpi"><b id="pwaBalOp">—</b><i>AVAILABLE</i></div>
+          <div class="tpop-kpi"><b id="pwaBalPaid">—</b><i>SETTLED</i></div>
+          <div class="tpop-kpi"><b id="pwaBalSplit">85/15</b><i>SPLIT</i></div>
+        </div>
+        <div class="tpop-fund" id="pwaBalFund">Field ops 85% · treasury 15%</div>
+      </article>
+      <article class="pay-card">
+        <div class="tpop-h">
+          <span class="tpop-rank">P</span>
+          <div><b>PERSONAL PAYOUTS</b><i>Your Stripe orders</i></div>
+          <span class="tpop-ph" id="pwaPayStatus">EMAIL</span>
+        </div>
+        <div class="tpop-kpis">
+          <div class="tpop-kpi"><b id="pwaBalYou">—</b><i>PAID</i></div>
+          <div class="tpop-kpi"><b id="pwaBalPend">—</b><i>PENDING</i></div>
+          <div class="tpop-kpi"><b id="pwaBalOrders">0</b><i>ORDERS</i></div>
+        </div>
+        <div class="tpop-fund" id="pwaPayLine">Enter email to load your payouts</div>
+      </article>
+      <article class="pay-card">
+        <label class="pay-email">
+          <input id="pwaPayEmail" type="email" autocomplete="email" placeholder="you@example.com">
+        </label>
+        <div class="tpop-cta">
+          <button type="button" class="pow" id="pwaCheckout">CHECKOUT</button>
+          <button type="button" class="hash" id="pwaWalletView">WALLET</button>
+        </div>
+      </article>
     </div>
 
     <div class="grid" id="iconGrid">
@@ -344,11 +368,12 @@
   <div>Linking live 3D / 2D maps…</div>
 </div>
 <div class="pwa-frame" id="pwaFrame">
-  <button type="button" class="close-view" id="pwaCloseView">← Ledger</button>
+  <button type="button" class="close-view" id="pwaCloseView" aria-label="Back to ledger">←</button>
   <iframe id="pwaIframe" title="Guardians maps"></iframe>
 </div>
 <script src="../../js/goo-config.js"></script>
 <script src="../../js/goo-core.js"></script>
+<script src="../../js/goo-news.js"></script>
 <script src="../../js/goo-compass.js"></script>
 <script src="../../js/goo-shell.js"></script>
 <script src="../../js/goo-stripe.js"></script>

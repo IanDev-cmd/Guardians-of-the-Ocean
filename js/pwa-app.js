@@ -82,28 +82,49 @@
     if (payEmail) payEmail.value = localStorage.getItem('goo-checkout-email') || '';
 
     function paintPay(b) {
+      var fund = b.fund || {};
+      var personal = b.personal || {};
       var op = document.getElementById('pwaBalOp');
+      var paid = document.getElementById('pwaBalPaid');
       var pend = document.getElementById('pwaBalPend');
       var split = document.getElementById('pwaBalSplit');
-      var fund = document.getElementById('pwaBalFund');
+      var fundLine = document.getElementById('pwaBalFund');
       var liveEl = document.getElementById('pwaPayLive');
-      if (op) op.textContent = b.operating && b.operating.label ? b.operating.label : '—';
-      if (pend) pend.textContent = b.payoutQueue && b.payoutQueue.count != null ? String(b.payoutQueue.count) : '—';
-      if (split) split.textContent = b.spendSplit && b.spendSplit.label ? b.spendSplit.label.replace(' SPLIT', '') : '85/15';
-      if (fund) fund.textContent = (b.ledger && b.ledger.paid ? b.ledger.paid + ' paid · ' : '') + 'Field ops 85% · HCS';
-      if (liveEl) liveEl.textContent = b.live ? 'LIVE' : 'PAY';
+      var you = document.getElementById('pwaBalYou');
+      var orders = document.getElementById('pwaBalOrders');
+      var status = document.getElementById('pwaPayStatus');
+      var line = document.getElementById('pwaPayLine');
+      var avail = (fund.available && fund.available.label) || (b.operating && b.operating.label) || '—';
+      var settled = (fund.paid && fund.paid.label) || (b.ledger && b.ledger.paid) || '—';
+      var splitLbl = fund.split && fund.split.label ? fund.split.label.replace(' SPLIT', '') : (b.spendSplit && b.spendSplit.label ? b.spendSplit.label.replace(' SPLIT', '') : '85/15');
+      if (op) op.textContent = avail;
+      if (paid) paid.textContent = settled;
+      if (pend) pend.textContent = personal.pending && personal.pending.label ? personal.pending.label : (b.payoutQueue && b.payoutQueue.count != null ? String(b.payoutQueue.count) : '—');
+      if (split) split.textContent = splitLbl;
+      if (fundLine) fundLine.textContent = settled + ' settled · Field ops 85% · HCS';
+      if (liveEl) liveEl.textContent = b.live ? 'LIVE' : 'OFF';
+      if (you) you.textContent = personal.paid && personal.paid.label ? personal.paid.label : '$0.00';
+      if (orders) orders.textContent = String((personal.paid && personal.paid.count || 0) + (personal.pending && personal.pending.count || 0));
+      if (status) status.textContent = personal.status || 'EMAIL';
+      if (line) {
+        line.textContent = personal.email
+          ? (personal.status === 'LINKED' ? personal.email + ' · Stripe + Postgres' : personal.email + ' · no orders yet')
+          : 'Enter email to load your payouts';
+      }
     }
 
-    if (window.GooStripe && window.GooStripe.fetchBalance) {
-      window.GooStripe.fetchBalance().then(paintPay).catch(function () {
-        paintPay({
-          live: false,
-          operating: { label: '$0.00' },
-          payoutQueue: { count: 12 },
-          spendSplit: { label: '85/15' },
-          ledger: { paid: '' }
-        });
+    function loadPay() {
+      var email = (payEmail && payEmail.value.trim()) || localStorage.getItem('goo-checkout-email') || '';
+      if (!window.GooStripe || !window.GooStripe.fetchBalance) return;
+      window.GooStripe.fetchBalance(email).then(paintPay).catch(function () {
+        paintPay({ live: false, operating: { label: '$0.00' }, payoutQueue: { count: 0 }, spendSplit: { label: '85/15' }, ledger: { paid: '$0.00' }, personal: { status: 'OFF' } });
       });
+    }
+
+    if (window.GooStripe && window.GooStripe.fetchBalance) loadPay();
+    if (payEmail) {
+      payEmail.addEventListener('change', loadPay);
+      payEmail.addEventListener('blur', loadPay);
     }
 
     if (payBtn) {
@@ -140,22 +161,39 @@
 
   function payCardHtml(){
     return '' +
-      '<div class="tpop-h">' +
-        '<span class="tpop-rank">$</span>' +
-        '<div><b>RESTORATION CREDIT</b><i>Stripe Checkout · treasury</i></div>' +
-        '<span class="tpop-ph" id="pwaPayLive">PAY</span>' +
-      '</div>' +
-      '<div class="tpop-kpis">' +
-        '<div class="tpop-kpi"><b id="pwaBalOp">—</b><i>AVAILABLE</i></div>' +
-        '<div class="tpop-kpi"><b id="pwaBalPend">12</b><i>PENDING</i></div>' +
-        '<div class="tpop-kpi"><b id="pwaBalSplit">85/15</b><i>SPLIT</i></div>' +
-      '</div>' +
-      '<div class="tpop-fund" id="pwaBalFund">Field ops 85% · treasury 15% · HCS</div>' +
-      '<label class="pay-email"><input id="pwaPayEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>' +
-      '<div class="tpop-cta">' +
-        '<button type="button" class="pow" id="pwaCheckout">CHECKOUT</button>' +
-        '<button type="button" class="hash" id="pwaWalletView">WALLET</button>' +
-      '</div>';
+      '<article class="pay-card">' +
+        '<div class="tpop-h">' +
+          '<span class="tpop-rank">F</span>' +
+          '<div><b>RESTORATION FUND</b><i>Stripe treasury · database</i></div>' +
+          '<span class="tpop-ph" id="pwaPayLive">LIVE</span>' +
+        '</div>' +
+        '<div class="tpop-kpis">' +
+          '<div class="tpop-kpi"><b id="pwaBalOp">—</b><i>AVAILABLE</i></div>' +
+          '<div class="tpop-kpi"><b id="pwaBalPaid">—</b><i>SETTLED</i></div>' +
+          '<div class="tpop-kpi"><b id="pwaBalSplit">85/15</b><i>SPLIT</i></div>' +
+        '</div>' +
+        '<div class="tpop-fund" id="pwaBalFund">Field ops 85% · treasury 15%</div>' +
+      '</article>' +
+      '<article class="pay-card">' +
+        '<div class="tpop-h">' +
+          '<span class="tpop-rank">P</span>' +
+          '<div><b>PERSONAL PAYOUTS</b><i>Your Stripe orders</i></div>' +
+          '<span class="tpop-ph" id="pwaPayStatus">EMAIL</span>' +
+        '</div>' +
+        '<div class="tpop-kpis">' +
+          '<div class="tpop-kpi"><b id="pwaBalYou">—</b><i>PAID</i></div>' +
+          '<div class="tpop-kpi"><b id="pwaBalPend">—</b><i>PENDING</i></div>' +
+          '<div class="tpop-kpi"><b id="pwaBalOrders">0</b><i>ORDERS</i></div>' +
+        '</div>' +
+        '<div class="tpop-fund" id="pwaPayLine">Enter email to load your payouts</div>' +
+      '</article>' +
+      '<article class="pay-card">' +
+        '<label class="pay-email"><input id="pwaPayEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>' +
+        '<div class="tpop-cta">' +
+          '<button type="button" class="pow" id="pwaCheckout">CHECKOUT</button>' +
+          '<button type="button" class="hash" id="pwaWalletView">WALLET</button>' +
+        '</div>' +
+      '</article>';
   }
 
   function featureCardHtml(item){
@@ -167,14 +205,16 @@
       return '<button type="button" class="' + (b.cls || 'pow') + '" data-view="' + b.view + '">' + b.label + '</button>';
     }).join('');
     return '' +
-      '<div class="tpop-h">' +
-        '<span class="tpop-rank">' + c.rank + '</span>' +
-        '<div><b>' + c.title + '</b><i>' + c.sub + '</i></div>' +
-        '<span class="tpop-ph">' + c.badge + '</span>' +
-      '</div>' +
-      '<div class="tpop-kpis">' + kpis + '</div>' +
-      '<div class="tpop-fund">' + c.fund + '</div>' +
-      '<div class="tpop-cta">' + ctas + '</div>';
+      '<article class="pay-card">' +
+        '<div class="tpop-h">' +
+          '<span class="tpop-rank">' + c.rank + '</span>' +
+          '<div><b>' + c.title + '</b><i>' + c.sub + '</i></div>' +
+          '<span class="tpop-ph">' + c.badge + '</span>' +
+        '</div>' +
+        '<div class="tpop-kpis">' + kpis + '</div>' +
+        '<div class="tpop-fund">' + c.fund + '</div>' +
+        '<div class="tpop-cta">' + ctas + '</div>' +
+      '</article>';
   }
 
   function showCard(item){

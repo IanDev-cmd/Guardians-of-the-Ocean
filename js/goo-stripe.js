@@ -23,8 +23,9 @@
     return body;
   }
 
-  async function fetchBalance() {
-    return getJson('/api/balance');
+  async function fetchBalance(email) {
+    var q = email ? ('?email=' + encodeURIComponent(email)) : '';
+    return getJson('/api/balance' + q);
   }
 
   async function startCheckout(email, mode) {

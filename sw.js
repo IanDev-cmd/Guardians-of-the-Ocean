@@ -1,4 +1,4 @@
-const CACHE_NAME = 'guardians-ocean-v20';
+const CACHE_NAME = 'guardians-ocean-v22';
 const ASSETS = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const ASSETS = [
   './cancel.html',
   './css/goo.css',
   './js/goo-core.js',
+  './js/goo-news.js',
   './js/boot.js',
   './js/goo-config.js',
   './js/goo-stripe.js',
@@ -71,7 +72,14 @@ self.addEventListener('fetch', (event) => {
   const path = new URL(url).pathname;
   const live =
     url.includes('open-meteo.com') ||
-    url.includes('nominatim.openstreetmap.org');
+    url.includes('nominatim.openstreetmap.org') ||
+    url.includes('gdeltproject.org') ||
+    url.includes('rss2json.com') ||
+    url.includes('news.google.com') ||
+    url.includes('sciencedaily.com') ||
+    url.includes('earthobservatory.nasa.gov') ||
+    url.includes('google.com/s2/favicons') ||
+    url.includes('guardians-stripe.onrender.com');
   const tiles = url.includes('arcgisonline.com') || url.includes('tile.openstreetmap.org');
   const appFile =
     event.request.mode === 'navigate' ||
@@ -96,6 +104,43 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => cached);
       return cached || fetched;
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || './pwa/island-weather-pwa/index.html';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+      const hit = windows.find((c) => c.url && c.url.indexOf(self.registration.scope) === 0);
+      if (hit && hit.navigate) return hit.navigate(target).then((c) => c && c.focus());
+      if (hit && hit.focus) return hit.focus();
+      return self.clients.openWindow(target);
+    })
+  );
+});
+
+self.addEventListener('message', (event) => {
+  const data = event.data || {};
+  if (data.type !== 'news-push' || !data.item || !self.registration.showNotification) return;
+  const it = data.item;
+  event.waitUntil(
+    self.registration.showNotification(it.title || 'Coastal news', {
+      body: it.body || '',
+      icon: it.icon || './pwa/island-weather-pwa/icons/icon-192.png',
+      badge: './pwa/island-weather-pwa/icons/icon-192.png',
+      tag: it.tag || 'goo-news',
+      data: { url: it.url || './pwa/island-weather-pwa/index.html' }
+    })
+  );
+});
+
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag !== 'goo-news') return;
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window' }).then((windows) => {
+      windows.forEach((c) => c.postMessage({ type: 'news-refresh' }));
     })
   );
 });

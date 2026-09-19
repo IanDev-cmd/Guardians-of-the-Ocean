@@ -309,6 +309,8 @@ document.addEventListener('pointerover', function(e){
   var ledgerTitle = document.getElementById('uxLedgerTitle');
   var ledgerList = document.getElementById('uxLedgerList');
   var ledgerClose = document.getElementById('uxLedgerClose');
+  var asidePreview = document.getElementById('uxAsidePreview');
+  var balanceDock = document.getElementById('uxBalanceDock');
 
   var current = null, tagIndex = 0, toastTimer = null;
 
@@ -402,10 +404,12 @@ document.addEventListener('pointerover', function(e){
     elSub.textContent = d.sub;
     elSection.textContent = d.section;
     elRows.innerHTML = d.rows.map(renderRow).join('');
-    elHero.innerHTML = svg(ICON[d.hero], ' style="stroke:' + d.accent + ';stroke-width:1.3;filter:drop-shadow(0 0 1.4vw ' + d.accent + '99)"');
-    elHero.classList.remove('preview');
-    elHero.style.background = 'radial-gradient(120% 120% at 30% 18%, ' + d.accent + '22, transparent 55%), #0a100e';
+    if (elHero) {
+      elHero.innerHTML = svg(ICON[d.hero], ' style="stroke:' + d.accent + ';stroke-width:1.3"');
+      elHero.classList.remove('preview');
+    }
     elHistoryLabel.textContent = d.history;
+    paintAside(d);
     updateStepState();
     syncCheckout(id);
     if (ledgerBtns) {
@@ -427,8 +431,29 @@ document.addEventListener('pointerover', function(e){
     ledgerSheet.hidden = true;
   }
 
+  function paintAside(d){
+    var wallet = current === 'wallet';
+    if (balanceDock) balanceDock.hidden = !wallet;
+    if (!asidePreview) return;
+    asidePreview.hidden = wallet;
+    if (wallet || !d) return;
+    var kpis = (d.rows || []).slice(0, 3).map(function(r){
+      var label = (r.status && r.status.text) ? r.status.text : '—';
+      var unit = String(r.title || '').split(' ').slice(0, 2).join(' ').toUpperCase();
+      return '<div class="tpop-kpi"><b>' + label + '</b><i>' + unit + '</i></div>';
+    }).join('');
+    asidePreview.innerHTML =
+      '<div class="tpop-h">' +
+        '<span class="tpop-rank">' + d.num + '</span>' +
+        '<div><b>' + String(d.title || '').toUpperCase() + '</b><i>' + d.sub + '</i></div>' +
+        '<span class="tpop-ph">' + String(d.cat || '').split(' ')[0] + '</span>' +
+      '</div>' +
+      '<div class="tpop-kpis">' + kpis + '</div>' +
+      '<div class="tpop-fund">' + d.section + '</div>';
+  }
+
   function openLedgerSheet(kind){
-    if (!pwaPhone() || !ledgerSheet || !ledgerList) return;
+    if (!ledgerSheet || !ledgerList) return;
     var title = kind === 'history' ? 'Ledger History' : 'Ledger Summary';
     var rows = LEDGER_LISTS[kind] || LEDGER_LISTS.summary;
     if (ledgerTitle) ledgerTitle.textContent = title;
@@ -442,7 +467,7 @@ document.addEventListener('pointerover', function(e){
   function closeCard(){
     closeLedgerSheet();
     modal.classList.remove('open');
-    elHero.classList.remove('preview');
+    if (elHero) elHero.classList.remove('preview');
   }
 
   document.querySelectorAll('.icon-tip').forEach(function(tip){
@@ -463,6 +488,18 @@ document.addEventListener('pointerover', function(e){
     if (!btn) return;
     openLedgerSheet(btn.getAttribute('data-ledger'));
   });
+  if (balanceDock) balanceDock.addEventListener('click', function(ev){
+    var led = ev.target.closest('[data-ledger]');
+    if (led) {
+      openLedgerSheet(led.getAttribute('data-ledger'));
+      return;
+    }
+    if (ev.target.id === 'uxFundRefresh' || ev.target.id === 'uxPayRefresh') loadBalances();
+  });
+  if (checkoutEmail) {
+    checkoutEmail.addEventListener('change', loadBalances);
+    checkoutEmail.addEventListener('blur', loadBalances);
+  }
   modal.addEventListener('click', function(ev){ if(ev.target === modal) closeCard(); });
 
   stepUp.addEventListener('click', function(){ shiftTag(-1); });
@@ -503,18 +540,58 @@ document.addEventListener('pointerover', function(e){
     checkoutEmail.value = localStorage.getItem('goo-checkout-email') || '';
   }
 
+  function setText(id, value){
+    var el = document.getElementById(id);
+    if (el) el.textContent = value == null ? '—' : String(value);
+  }
+
   function paintWallet(balance) {
     var rows = DATA.wallet.rows;
     if (!rows || !balance) return;
-    rows[0].sub = balance.operating.label + ' · live Stripe available';
-    rows[0].status = { t: balance.operating.cents > 0 ? 'ok' : 'warn', text: balance.operating.status };
+    var fund = balance.fund || {};
+    var personal = balance.personal || {};
+    var avail = (fund.available && fund.available.label) || (balance.operating && balance.operating.label) || '$0.00';
+    var settled = (fund.paid && fund.paid.label) || (balance.ledger && balance.ledger.paid) || '$0.00';
+    var split = fund.split && fund.split.label ? fund.split.label.replace(' SPLIT', '') : (balance.spendSplit && balance.spendSplit.label ? balance.spendSplit.label.replace(' SPLIT', '') : '85/15');
+    rows[0].sub = avail + ' · live Stripe available';
+    rows[0].status = { t: (fund.available && fund.available.cents > 0) || (balance.operating && balance.operating.cents > 0) ? 'ok' : 'warn', text: (fund.available && fund.available.status) || (balance.operating && balance.operating.status) || 'EMPTY' };
     rows[1].sub = 'Scheduled disbursements + Stripe pending';
-    rows[1].status = { t: 'warn', text: balance.payoutQueue.label };
-    rows[2].status = { t: 'ok', text: balance.spendSplit.label };
-    LEDGER_LISTS.summary[0].a = balance.operating.label || '$0.00';
-    LEDGER_LISTS.summary[1].a = balance.payoutQueue && balance.payoutQueue.label ? balance.payoutQueue.label : '12 pending';
-    LEDGER_LISTS.summary[2].a = balance.spendSplit && balance.spendSplit.label ? balance.spendSplit.label.replace(' SPLIT', '') : '85 / 15';
+    rows[1].status = { t: 'warn', text: balance.payoutQueue && balance.payoutQueue.label ? balance.payoutQueue.label : '0 PENDING' };
+    rows[2].status = { t: 'ok', text: balance.spendSplit && balance.spendSplit.label ? balance.spendSplit.label : '85/15 SPLIT' };
+    LEDGER_LISTS.summary[0].a = avail;
+    LEDGER_LISTS.summary[1].a = balance.payoutQueue && balance.payoutQueue.label ? balance.payoutQueue.label : '0 pending';
+    LEDGER_LISTS.summary[2].a = split;
+    LEDGER_LISTS.summary[3].a = settled;
+    if (personal.recent && personal.recent.length) {
+      LEDGER_LISTS.history = personal.recent.map(function(r){
+        return { t: r.status === 'paid' ? 'Payout settled' : 'Payout ' + r.status, s: (personal.email || 'order') + ' · ' + r.id.slice(-8), a: r.amount };
+      });
+    }
+    setText('uxFundAvail', avail);
+    setText('uxFundPaid', settled);
+    setText('uxFundSplit', split);
+    setText('uxFundLive', balance.live ? 'LIVE' : 'OFF');
+    setText('uxFundLine', settled + ' settled · Field ops 85% · treasury 15%');
+    setText('uxPayPaid', personal.paid && personal.paid.label ? personal.paid.label : '$0.00');
+    setText('uxPayPend', personal.pending && personal.pending.label ? personal.pending.label : '$0.00');
+    setText('uxPayCount', String((personal.paid && personal.paid.count || 0) + (personal.pending && personal.pending.count || 0)));
+    setText('uxPayStatus', personal.status || 'EMAIL');
+    setText('uxPayLine', personal.email
+      ? (personal.status === 'LINKED' ? personal.email + ' · Stripe + Postgres' : personal.email + ' · no orders yet')
+      : 'Enter email to load your payouts');
     if (current === 'wallet') elRows.innerHTML = rows.map(renderRow).join('');
+  }
+
+  function loadBalances() {
+    if (!window.GooStripe || !window.GooStripe.fetchBalance) return;
+    var email = checkoutEmail ? checkoutEmail.value.trim() : (localStorage.getItem('goo-checkout-email') || '');
+    window.GooStripe.fetchBalance(email).then(paintWallet).catch(function () {
+      DATA.wallet.rows[0].sub = 'Connect treasury API to show live Stripe balances';
+      setText('uxFundLive', 'OFF');
+      setText('uxFundLine', 'Treasury API unreachable');
+      setText('uxPayLine', 'Could not load personal payouts');
+      if (current === 'wallet') elRows.innerHTML = DATA.wallet.rows.map(renderRow).join('');
+    });
   }
 
   function syncCheckout(id) {
@@ -522,11 +599,7 @@ document.addEventListener('pointerover', function(e){
     var on = id === 'wallet';
     checkoutWrap.classList.toggle('show', on);
     checkoutWrap.hidden = !on;
-    if (!on || !window.GooStripe || !window.GooStripe.fetchBalance) return;
-    window.GooStripe.fetchBalance().then(paintWallet).catch(function () {
-      DATA.wallet.rows[0].sub = 'Connect treasury API to show live Stripe balances';
-      if (current === 'wallet') elRows.innerHTML = DATA.wallet.rows.map(renderRow).join('');
-    });
+    if (on) loadBalances();
   }
 
   if (checkoutBtn) {
@@ -562,8 +635,8 @@ document.addEventListener('pointerover', function(e){
       var act = btn.dataset.act;
       var d = DATA[current];
       if(act === 'preview'){
-        elHero.classList.toggle('preview');
-        showToast(elHero.classList.contains('preview') ? 'Previewing asset' : 'Preview closed');
+        if (elHero) elHero.classList.toggle('preview');
+        showToast(elHero && elHero.classList.contains('preview') ? 'Previewing asset' : 'Preview closed');
       } else if(act === 'download'){
         var svgText = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="' + d.accent + '" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round">' + ICON[d.hero] + '</svg>';
         var blob = new Blob([svgText], {type:'image/svg+xml'});

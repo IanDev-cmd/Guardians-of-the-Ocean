@@ -75,7 +75,7 @@
   });
 
   var Notify = {
-    count: 0,
+    newsCount: 0,
     items: [],
     stack: null,
     bell: null,
@@ -91,14 +91,14 @@
       this.bell = document.createElement('button');
       this.bell.type = 'button';
       this.bell.className = 'n-bell';
-      this.bell.setAttribute('aria-label', 'Notifications');
+      this.bell.setAttribute('aria-label', 'Coastal news');
       this.bell.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5"/><path d="M9 17a3 3 0 0 0 6 0"/></svg><i class="n-badge" hidden>0</i>';
       document.body.appendChild(this.bell);
       this.badge = this.bell.querySelector('.n-badge');
 
       this.panel = document.createElement('div');
       this.panel.className = 'n-panel';
-      this.panel.innerHTML = '<header>Live notices</header><div class="n-list"></div>';
+      this.panel.innerHTML = '<header>Coastal news</header><div class="n-list"></div>';
       document.body.appendChild(this.panel);
 
       var self = this;
@@ -106,24 +106,26 @@
         e.stopPropagation();
         Sound.click();
         self.panel.classList.toggle('open');
-        self.count = 0;
+        self.newsCount = 0;
         self.syncBadge();
+        if (root.GOO.News && root.GOO.News.markRead) root.GOO.News.markRead();
         self.requestNative();
       });
+      this.panel.addEventListener('click', function (e) { e.stopPropagation(); });
       document.addEventListener('click', function () { self.panel.classList.remove('open'); });
     },
     syncBadge: function () {
       if (!this.badge) return;
-      if (this.count > 0) {
+      if (this.newsCount > 0) {
         this.badge.hidden = false;
-        this.badge.textContent = this.count > 9 ? '9+' : String(this.count);
+        this.badge.textContent = this.newsCount > 9 ? '9+' : String(this.newsCount);
       } else this.badge.hidden = true;
     },
     requestNative: function () {
       if (this.askedNative || !('Notification' in window) || Notification.permission !== 'default') return;
       this.askedNative = true;
       Notification.requestPermission().then(function (p) {
-        if (p === 'granted') Notify.toast({ tone: 'blue', title: 'Alerts on', sub: 'You will hear and see live field notices.', n: '01' });
+        if (p === 'granted' && root.GOO.News) root.GOO.News.poll({ push: true });
       });
     },
     listen: function () {
@@ -135,12 +137,6 @@
         Notify.toast({ tone: 'amber', title: 'Offline', sub: 'Cached maps stay available.', n: '!' });
       });
     },
-    native: function (title, body) {
-      if (!('Notification' in window) || Notification.permission !== 'granted' || document.hasFocus()) return;
-      try {
-        new Notification(title, { body: body, icon: ICON_BASE + 'pwa/island-weather-pwa/icons/icon-192.png' });
-      } catch (e) {}
-    },
     toast: function (opts) {
       this.ensure();
       opts = opts || {};
@@ -148,28 +144,20 @@
       if (tone === 'green') Sound.success();
       else if (tone === 'amber') Sound.warn();
       else Sound.info();
-      this.count += 1;
-      this.syncBadge();
       var num = opts.n != null ? String(opts.n) : String(this.items.length + 1).padStart(2, '0');
+      var iconHtml = opts.icon
+        ? '<span class="n-ico n-ico-src" aria-hidden="true"><img class="n-src" alt="" src="' + esc(opts.icon) + '" width="18" height="18"></span>'
+        : '<span class="n-ico" aria-hidden="true">🔔</span>';
       var el = document.createElement('div');
       el.className = 'n-toast tone-' + tone;
       el.innerHTML =
         '<span class="n-dots" aria-hidden="true"><i></i><i></i><i></i></span>' +
         '<span class="n-num">' + esc(num) + '</span>' +
         '<span class="n-copy"><b>' + esc(opts.title || 'Notice') + '</b><i>' + esc(opts.sub || '') + '</i></span>' +
-        '<span class="n-ico" aria-hidden="true">🔔</span>';
+        iconHtml;
       this.stack.appendChild(el);
       requestAnimationFrame(function () { el.classList.add('show'); });
       this.items.unshift({ tone: tone, title: opts.title, sub: opts.sub, t: Date.now() });
-      var list = this.panel.querySelector('.n-list');
-      if (list) {
-        var row = document.createElement('div');
-        row.className = 'n-row tone-' + tone;
-        row.innerHTML = '<b>' + esc(opts.title || '') + '</b><i>' + esc(opts.sub || '') + '</i>';
-        list.insertBefore(row, list.firstChild);
-        while (list.children.length > 12) list.removeChild(list.lastChild);
-      }
-      this.native(opts.title || 'Guardians', opts.sub || '');
       setTimeout(function () {
         el.classList.remove('show');
         setTimeout(function () { if (el.parentNode) el.remove(); }, 380);
