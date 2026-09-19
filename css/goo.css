@@ -190,6 +190,7 @@ body.tut-on .app{ filter:none; }
 }
 
 html.embed .rail .icons,
+html.embed .rail-mid,
 html.embed .uxmodal,
 html.embed .nav{ display:none !important; }
 html.embed .hero h1{ font-size:clamp(28px, 11vw, 64px); }

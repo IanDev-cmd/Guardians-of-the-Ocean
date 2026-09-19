@@ -73,7 +73,7 @@ html,body{ margin:0; padding:0; width:100%; height:100%; overflow:hidden; backgr
 body{ font-family:'Quicksand',sans-serif; }
 
 .card .shot, .panel .shot, .flyer{ overflow:hidden; border-radius:0; }
-.panel, .uxcard, .icon-tip, .gsearch input, .terra-search input,
+.panel, .uxcard, .gsearch input, .terra-search input,
 .terra-stat, .terra-brand, .terra-filters, .terra-sg, .search-hits, .glayers,
 .tpop, .uxrow, .uxpill, .n-toast{ border-radius:var(--radius); }
 
@@ -134,15 +134,19 @@ html, body, a, button, .card{ cursor:none; }
   padding:14px 0 16px;
 }
 .rail .logo{
-  position:relative; left:auto; top:auto; transform:none;
+  position:absolute; left:50%; top:14px; transform:translateX(-50%);
   width:var(--rail-hit); height:var(--rail-hit);
   display:flex; align-items:center; justify-content:center;
-  flex:0 0 var(--rail-hit);
 }
 .rail .logo svg{ width:var(--rail-glyph); height:var(--rail-glyph); min-width:0; min-height:0; display:block; }
+.rail-mid{
+  flex:1 1 auto; width:var(--rail-w);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:var(--rail-gap);
+}
 .rail .socials{
   position:relative; left:auto; bottom:auto; top:auto; transform:none;
-  margin-top:auto;
+  margin:0;
   display:flex; flex-direction:column; align-items:center; gap:var(--rail-gap);
 }
 .rail .socials a{
@@ -154,10 +158,10 @@ html, body, a, button, .card{ cursor:none; }
 /* ------------------------------------------------------- sidebar icon rail */
 .icons{
   position:relative; left:auto; width:var(--rail-w); top:auto; bottom:auto;
-  display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
-  gap:var(--rail-cluster); z-index:8;
-  margin:var(--rail-cluster) 0;
-  flex:1 1 auto; overflow:visible;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  gap:var(--rail-gap); z-index:8;
+  margin:0;
+  flex:0 0 auto; overflow:visible;
 }
 .icon-group{
   display:flex; flex-direction:column; align-items:center; gap:var(--rail-gap);
@@ -180,7 +184,7 @@ html, body, a, button, .card{ cursor:none; }
   width:var(--rail-glyph); height:var(--rail-glyph);
   min-width:0; min-height:0;
   display:block;
-  fill:none; stroke:#eef6ff; stroke:url(#railIco); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
+  fill:none; stroke:#fff; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
 }
 
 /* the popup that slides out beside a sidebar icon, styled after the
@@ -192,6 +196,7 @@ html, body, a, button, .card{ cursor:none; }
   gap:8px; height:var(--rail-hit); min-height:var(--rail-hit);
   background:#fdfdfd;
   padding:0 8px 0 12px;
+  border-radius:0;
   white-space:nowrap; pointer-events:none;
   font-family:inherit; font-size:12px; font-weight:700;
   letter-spacing:.04em; color:#1a2733;
@@ -205,19 +210,18 @@ html, body, a, button, .card{ cursor:none; }
   opacity:1; transform:translate(0,-50%); pointer-events:auto;
 }
 .tip-ico{
-  width:1.85vw; height:1.85vw; min-width:18px; min-height:18px;
+  width:var(--rail-hit); height:var(--rail-hit); min-width:var(--rail-hit); min-height:var(--rail-hit);
   flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+  border-radius:0;
 }
 .tip-ico svg{
-  width:.95vw; height:.95vw; min-width:9px; min-height:9px; display:block;
-  fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
+  width:var(--rail-glyph); height:var(--rail-glyph); min-width:0; min-height:0; display:block;
+  fill:none; stroke:#fff; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
 }
 @media (max-width:760px){
-  .icon-tip{ font-size:12px; height:var(--rail-hit); padding:0 8px 0 12px; }
-  .icon-btn, .icon-wrap, .rail .socials a, .rail .logo{ width:var(--rail-hit); height:var(--rail-hit); }
-  .icon-btn svg, .rail .logo svg, .rail .socials svg{ width:var(--rail-glyph); height:var(--rail-glyph); }
-  .tip-ico{ width:22px; height:22px; }
-  .tip-ico svg{ width:12px; height:12px; }
+  .icon-tip{ font-size:12px; height:var(--rail-hit); padding:0 8px 0 12px; border-radius:0; }
+  .icon-btn, .icon-wrap, .rail .socials a, .rail .logo, .tip-ico{ width:var(--rail-hit); height:var(--rail-hit); }
+  .icon-btn svg, .rail .logo svg, .rail .socials svg, .tip-ico svg{ width:var(--rail-glyph); height:var(--rail-glyph); }
 }
 
 /* ------------------------------------------------------ floating ux card */
@@ -672,6 +676,7 @@ button.uxrow{
 .app.detail .nav,
 .app.globe-focus .hero,
 .app.globe-focus .icons,
+.app.globe-focus .rail-mid,
 .app.globe-focus .list,
 .app.globe-focus .scrollbar,
 .app.globe-focus .nav{ opacity:0; pointer-events:none; }
@@ -1093,74 +1098,9 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
       <svg viewBox="0 0 24 24" fill="#fff"><path d="M4 20c0-7 4.5-12.5 15-15-1 4.2-1.6 7.3-4 10.2C12.4 18.4 8.6 19.4 4 20Zm2.6-1.6c3.6-.7 6.4-1.7 8.3-4 1.6-2 2.2-4.1 2.8-6.6-7.6 2.4-10.3 6.6-11.1 10.6Z"/></svg>
     </div>
 
+    <div class="rail-mid">
     <div class="icons" id="icons">
       <div class="icon-group">
-        <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Globe / Earth" style="--ico:#2f8fd6">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3c2.4 2.4 3.8 5.6 3.8 9s-1.4 6.6-3.8 9c-2.4-2.4-3.8-5.6-3.8-9s1.4-6.6 3.8-9Z"/></svg>
-          </button>
-          <div class="icon-tip" data-card="globe">
-            <span>Globe / Earth</span>
-            <span class="tip-ico" style="background:#2f8fd6"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3c2.4 2.4 3.8 5.6 3.8 9s-1.4 6.6-3.8 9c-2.4-2.4-3.8-5.6-3.8-9s1.4-6.6 3.8-9Z"/></svg></span>
-          </div>
-        </div>
-        <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Tree / Leaf" style="--ico:#2e8b57">
-            <svg viewBox="0 0 24 24"><path d="M12 2c5 4 8 8 8 12a8 8 0 0 1-16 0c0-4 3-8 8-12Z"/><path d="M12 22v-8"/></svg>
-          </button>
-          <div class="icon-tip" data-card="tree">
-            <span>Tree / Leaf</span>
-            <span class="tip-ico" style="background:#2e8b57"><svg viewBox="0 0 24 24"><path d="M12 2c5 4 8 8 8 12a8 8 0 0 1-16 0c0-4 3-8 8-12Z"/><path d="M12 22v-8"/></svg></span>
-          </div>
-        </div>
-        <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Bird / Wildlife" style="--ico:#3aa7a0">
-            <svg viewBox="0 0 24 24"><path d="M3 15c2 1 4 1 6-1 1 3 4 5 8 4-1-1-1-2 0-3 2 0 4-1 5-3-2 1-3 1-4 0 1-1 2-3 1-5-1 2-3 3-5 3-2-2-5-2-7 0-2 0-3 2-4 5Z"/></svg>
-          </button>
-          <div class="icon-tip" data-card="bird">
-            <span>Bird / Wildlife</span>
-            <span class="tip-ico" style="background:#3aa7a0"><svg viewBox="0 0 24 24"><path d="M3 15c2 1 4 1 6-1 1 3 4 5 8 4-1-1-1-2 0-3 2 0 4-1 5-3-2 1-3 1-4 0 1-1 2-3 1-5-1 2-3 3-5 3-2-2-5-2-7 0-2 0-3 2-4 5Z"/></svg></span>
-          </div>
-        </div>
-        <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Water Drop / Wave" style="--ico:#1e90ff">
-            <svg viewBox="0 0 24 24"><path d="M12 2.7s-6.2 7.4-6.2 11.4a6.2 6.2 0 0 0 12.4 0C18.2 10.1 12 2.7 12 2.7Z"/></svg>
-          </button>
-          <div class="icon-tip" data-card="drop">
-            <span>Water Drop / Wave</span>
-            <span class="tip-ico" style="background:#1e90ff"><svg viewBox="0 0 24 24"><path d="M12 2.7s-6.2 7.4-6.2 11.4a6.2 6.2 0 0 0 12.4 0C18.2 10.1 12 2.7 12 2.7Z"/></svg></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="icon-group">
-        <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Shield Check" style="--ico:#dc7519">
-            <svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 5-3.3 7.7-7 9-3.7-1.3-7-4-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg>
-          </button>
-          <div class="icon-tip" data-card="shield">
-            <span>Shield Check</span>
-            <span class="tip-ico" style="background:#dc7519"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 5-3.3 7.7-7 9-3.7-1.3-7-4-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span>
-          </div>
-        </div>
-        <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Lock / Vault" style="--ico:#6b7280">
-            <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9"/><path d="M7.5 11V7.5a4.5 4.5 0 0 1 9 0V11"/><circle cx="12" cy="15.3" r="1.3"/></svg>
-          </button>
-          <div class="icon-tip" data-card="lock">
-            <span>Lock / Vault</span>
-            <span class="tip-ico" style="background:#6b7280"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9"/><path d="M7.5 11V7.5a4.5 4.5 0 0 1 9 0V11"/><circle cx="12" cy="15.3" r="1.3"/></svg></span>
-          </div>
-        </div>
-        <div class="icon-wrap">
-          <button class="icon-btn" type="button" aria-label="Sun / Energy" style="--ico:#f2a71b">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="3.5" y1="12" x2="1.5" y2="12"/><line x1="22.5" y1="12" x2="20.5" y2="12"/><line x1="5" y1="5" x2="6.6" y2="6.6"/><line x1="17.4" y1="17.4" x2="19" y2="19"/><line x1="19" y1="5" x2="17.4" y2="6.6"/><line x1="6.6" y1="17.4" x2="5" y2="19"/></svg>
-          </button>
-          <div class="icon-tip" data-card="sun">
-            <span>Sun / Energy</span>
-            <span class="tip-ico" style="background:#f2a71b"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="3.5" y1="12" x2="1.5" y2="12"/><line x1="22.5" y1="12" x2="20.5" y2="12"/><line x1="5" y1="5" x2="6.6" y2="6.6"/><line x1="17.4" y1="17.4" x2="19" y2="19"/><line x1="19" y1="5" x2="17.4" y2="6.6"/><line x1="6.6" y1="17.4" x2="5" y2="19"/></svg></span>
-          </div>
-        </div>
         <div class="icon-wrap">
           <button class="icon-btn" type="button" aria-label="Receipt / File Proof" style="--ico:#e07a3f">
             <svg viewBox="0 0 24 24"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
@@ -1170,9 +1110,6 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
             <span class="tip-ico" style="background:#e07a3f"><svg viewBox="0 0 24 24"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
           </div>
         </div>
-      </div>
-
-      <div class="icon-group">
         <div class="icon-wrap">
           <button class="icon-btn" type="button" aria-label="Milestone / Route" style="--ico:#7c5cff">
             <svg viewBox="0 0 24 24"><polygon points="1 6 1 21 8 18 16 21 23 18 23 3 16 6 8 3 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg>
@@ -1225,6 +1162,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
       <a class="share-link" data-share="wa" target="_blank" rel="noopener" aria-label="Share on WhatsApp">
         <svg viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2C6.58 2 2.15 6.4 2.15 11.83c0 1.74.46 3.43 1.33 4.92L2 22l5.4-1.42a10 10 0 0 0 4.64 1.18h.01c5.46 0 9.89-4.4 9.89-9.83C21.94 6.4 17.5 2 12.04 2Zm5.76 13.98c-.24.68-1.4 1.3-1.94 1.34-.5.04-1.12.06-1.8-.11-.42-.1-.95-.31-1.64-.6-2.89-1.25-4.77-4.16-4.92-4.35-.14-.2-1.18-1.57-1.18-3 0-1.42.74-2.12 1-2.41.24-.28.64-.41.86-.41h.62c.2 0 .47-.04.73.56.28.64.94 2.2 1.02 2.36.08.16.14.35.03.56-.1.2-.16.35-.31.54-.16.2-.33.44-.47.59-.16.16-.32.34-.14.66.18.32.8 1.32 1.72 2.14 1.18 1.05 2.14 1.38 2.48 1.54.32.16.52.14.71-.08.2-.22.84-.98 1.06-1.32.22-.34.44-.28.73-.16.3.12 1.88.89 2.2 1.05.32.16.54.24.62.38.08.14.08.82-.16 1.5Z"/></svg>
       </a>
+    </div>
     </div>
   </div>
 
