@@ -1,10 +1,11 @@
-const CACHE_NAME = 'guardians-ocean-v9';
+const CACHE_NAME = 'guardians-ocean-v10';
 const ASSETS = [
   './',
   './index.html',
   './save-the-earth (4).html',
   './css/goo.css',
   './js/goo-core.js',
+  './js/boot.js',
   './js/goo-compass.js',
   './js/goo-shell.js',
   './js/goo-globe.js',
@@ -12,18 +13,21 @@ const ASSETS = [
   './js/goo-map.js',
   './js/pwa-app.js',
   './manifest.webmanifest',
-  './photos/card-jungle.jpg',
-  './photos/card-thirsty.jpg',
-  './photos/city-jakarta.jpg',
-  './photos/city-manila.jpg',
-  './photos/city-hcmc.jpg',
-  './photos/city-lagos.jpg',
-  './photos/city-miami.jpg',
-  './photos/city-mumbai.jpg',
-  './photos/city-mombasa.jpg',
-  './photos/city-sydney.jpg',
-  './photos/city-capetown.jpg',
-  './photos/city-rotterdam.jpg',
+  './assets/3d/earth-preview.webp',
+  './assets/maps/cities.json',
+  './assets/maps/schools.geojson',
+  './assets/images/cards/jungle.webp',
+  './assets/images/cards/thirsty.webp',
+  './assets/images/cities/jakarta.webp',
+  './assets/images/cities/manila.webp',
+  './assets/images/cities/hcmc.webp',
+  './assets/images/cities/lagos.webp',
+  './assets/images/cities/miami.webp',
+  './assets/images/cities/mumbai.webp',
+  './assets/images/cities/mombasa.webp',
+  './assets/images/cities/sydney.webp',
+  './assets/images/cities/capetown.webp',
+  './assets/images/cities/rotterdam.webp',
   './pwa/island-weather-pwa/index.html',
   './pwa/island-weather-pwa/background.jpg',
   './pwa/island-weather-pwa/icons/icon-192.png',
@@ -60,8 +64,8 @@ self.addEventListener('fetch', (event) => {
   const path = new URL(url).pathname;
   const live =
     url.includes('open-meteo.com') ||
-    url.includes('nominatim.openstreetmap.org') ||
-    url.includes('arcgisonline.com');
+    url.includes('nominatim.openstreetmap.org');
+  const tiles = url.includes('arcgisonline.com') || url.includes('tile.openstreetmap.org');
   const appFile =
     event.request.mode === 'navigate' ||
     live ||
@@ -77,7 +81,7 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request).then((cached) => {
       const fetched = fetch(event.request)
         .then((res) => {
-          if (res && res.ok && event.request.method === 'GET' && url.indexOf(self.location.origin) === 0) {
+          if (res && res.ok && event.request.method === 'GET' && (url.indexOf(self.location.origin) === 0 || tiles)) {
             const copy = res.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
           }

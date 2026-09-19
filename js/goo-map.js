@@ -3,10 +3,11 @@
   'use strict';
   var overlay = document.getElementById('terraOverlay');
   if(!overlay) return;
-  if(!window.L){
-    window.openTerraRoadmap = function(){ alert('Leaflet failed to load. Check your network connection.'); };
-    window.closeTerraRoadmap = function(){};
-    return;
+
+  function loadLeaflet(){
+    if(window.L) return Promise.resolve();
+    if(window.GOOLoad) return window.GOOLoad.leaflet();
+    return Promise.reject(new Error('Leaflet loader missing'));
   }
 
   var GLYPH = {
@@ -82,48 +83,24 @@
   ];
   window.CITIES = CITIES;
 
-  var SCHOOLS = [
-    {city:'jakarta', type:'uni', name:'BINUS University', ll:[-6.2019,106.7820]},
-    {city:'jakarta', type:'uni', name:'Universitas Trisakti', ll:[-6.1684,106.7902]},
-    {city:'jakarta', type:'hs', name:'SMA Negeri 8 Jakarta', ll:[-6.2374,106.8473]},
-    {city:'jakarta', type:'hs', name:'SMA Negeri 70 Jakarta', ll:[-6.2411,106.7994]},
-    {city:'manila', type:'uni', name:'UP Manila', ll:[14.5772,120.9859]},
-    {city:'manila', type:'uni', name:'De La Salle University', ll:[14.5642,120.9932]},
-    {city:'manila', type:'uni', name:'University of Santo Tomas', ll:[14.6097,120.9893]},
-    {city:'manila', type:'hs', name:'Manila Science High School', ll:[14.5912,120.9814]},
-    {city:'hcmc', type:'uni', name:'RMIT Vietnam', ll:[10.7295,106.6940]},
-    {city:'hcmc', type:'uni', name:'UEH University', ll:[10.7800,106.6930]},
-    {city:'hcmc', type:'hs', name:'Le Hong Phong High School', ll:[10.7752,106.6798]},
-    {city:'hcmc', type:'hs', name:'Nguyen Thi Minh Khai HS', ll:[10.7768,106.6954]},
-    {city:'lagos', type:'uni', name:'University of Lagos', ll:[6.5158,3.3873]},
-    {city:'lagos', type:'uni', name:'Lagos State University', ll:[6.4692,3.2004]},
-    {city:'lagos', type:'hs', name:"King's College Lagos", ll:[6.4501,3.3960]},
-    {city:'lagos', type:'hs', name:'CMS Grammar School', ll:[6.4552,3.3901]},
-    {city:'miami', type:'uni', name:'University of Miami', ll:[25.7217,-80.2793]},
-    {city:'miami', type:'uni', name:'Florida International Univ.', ll:[25.7541,-80.3733]},
-    {city:'miami', type:'hs', name:'Miami Beach Senior High', ll:[25.7954,-80.1331]},
-    {city:'miami', type:'hs', name:'MAST Academy', ll:[25.7324,-80.1622]},
-    {city:'mumbai', type:'uni', name:'University of Mumbai', ll:[18.9297,72.8331]},
-    {city:'mumbai', type:'uni', name:"St. Xavier's College", ll:[18.9433,72.8314]},
-    {city:'mumbai', type:'uni', name:'IIT Bombay', ll:[19.1334,72.9154]},
-    {city:'mumbai', type:'hs', name:'Cathedral & John Connon', ll:[18.9378,72.8334]},
-    {city:'mombasa', type:'uni', name:'Technical Univ. of Mombasa', ll:[-4.0369,39.6684]},
-    {city:'mombasa', type:'uni', name:'Pwani University', ll:[-3.6274,39.8561]},
-    {city:'mombasa', type:'hs', name:'Mama Ngina Girls High', ll:[-4.0621,39.6772]},
-    {city:'mombasa', type:'hs', name:'Allidina Visram High School', ll:[-4.0532,39.6664]},
-    {city:'sydney', type:'uni', name:'University of Sydney', ll:[-33.8883,151.1873]},
-    {city:'sydney', type:'uni', name:'UTS', ll:[-33.8832,151.2005]},
-    {city:'sydney', type:'uni', name:'UNSW', ll:[-33.9173,151.2312]},
-    {city:'sydney', type:'hs', name:'Sydney Boys High School', ll:[-33.8943,151.2198]},
-    {city:'capetown', type:'uni', name:'University of Cape Town', ll:[-33.9577,18.4612]},
-    {city:'capetown', type:'uni', name:'CPUT Cape Town', ll:[-33.9324,18.4298]},
-    {city:'capetown', type:'hs', name:'SACS High School', ll:[-33.9701,18.4624]},
-    {city:'capetown', type:'hs', name:'Rondebosch Boys High', ll:[-33.9612,18.4781]},
-    {city:'rotterdam', type:'uni', name:'Erasmus University', ll:[51.9180,4.5258]},
-    {city:'rotterdam', type:'uni', name:'Rotterdam UAS', ll:[51.9172,4.4831]},
-    {city:'rotterdam', type:'hs', name:'Gymnasium Erasmianum', ll:[51.9174,4.4692]},
-    {city:'rotterdam', type:'hs', name:'Wolfert Tweetalig', ll:[51.9051,4.4678]}
-  ];
+  var SCHOOLS = [];
+  var schoolsReady = null;
+  function loadSchools(){
+    if(SCHOOLS.length) return Promise.resolve(SCHOOLS);
+    if(schoolsReady) return schoolsReady;
+    schoolsReady = fetch('assets/maps/schools.geojson').then(function(r){
+      if(!r.ok) throw new Error('schools');
+      return r.json();
+    }).then(function(gj){
+      SCHOOLS = (gj.features || []).map(function(f){
+        var p = f.properties || {};
+        var c = f.geometry && f.geometry.coordinates;
+        return { city:p.city, type:p.type, name:p.name, ll:[c[1], c[0]] };
+      });
+      return SCHOOLS;
+    }).catch(function(){ SCHOOLS = SCHOOLS || []; return SCHOOLS; });
+    return schoolsReady;
+  }
 
   var EDU_GLYPH = {
     hs:'<path d="M3 10l9-5 9 5-9 5-9-5Z"/><path d="M7 12.2V17c2 1.2 4 1.8 5 1.8S15 18.2 17 17v-4.8"/>',
@@ -348,18 +325,41 @@
 
   function rebuildEdu(){
     if(!map) return;
-    if(eduLayer && map.hasLayer(eduLayer)) map.removeLayer(eduLayer);
-    eduLayer = L.layerGroup();
-    if(!filters.edu) return;
-    var vis = {};
-    CITIES.filter(cityVisible).forEach(function(c){ vis[c.id] = true; });
-    SCHOOLS.forEach(function(s){
-      if(!vis[s.city]) return;
-      var m = L.marker(s.ll, { icon:eduIcon(s), interactive:true });
-      m.bindTooltip((s.type==='uni' ? 'UNI · ' : 'HS · ') + s.name, { direction:'top', offset:[0,-10], opacity:0.95 });
-      m.addTo(eduLayer);
+    loadSchools().then(function(){
+      if(eduLayer && map.hasLayer(eduLayer)) map.removeLayer(eduLayer);
+      eduLayer = L.layerGroup();
+      if(!filters.edu) return;
+      var vis = {};
+      CITIES.filter(cityVisible).forEach(function(c){ vis[c.id] = true; });
+      var zoom = map.getZoom();
+      var cluster = zoom < 9 || (window.GOO && GOO.Device && GOO.Device.mobile && zoom < 11);
+      if(cluster){
+        var groups = {};
+        SCHOOLS.forEach(function(s){
+          if(!vis[s.city]) return;
+          if(!groups[s.city]) groups[s.city] = [];
+          groups[s.city].push(s);
+        });
+        Object.keys(groups).forEach(function(id){
+          var list = groups[id];
+          var lat = 0, lng = 0;
+          list.forEach(function(s){ lat += s.ll[0]; lng += s.ll[1]; });
+          lat /= list.length; lng /= list.length;
+          var sample = list[0];
+          var m = L.marker([lat, lng], { icon:eduIcon(sample), interactive:true });
+          m.bindTooltip(list.length + ' campuses · ' + (CITIES.filter(function(c){ return c.id===id; })[0] || {name:id}).name, { direction:'top', offset:[0,-10], opacity:0.95 });
+          m.addTo(eduLayer);
+        });
+      } else {
+        SCHOOLS.forEach(function(s){
+          if(!vis[s.city]) return;
+          var m = L.marker(s.ll, { icon:eduIcon(s), interactive:true });
+          m.bindTooltip((s.type==='uni' ? 'UNI · ' : 'HS · ') + s.name, { direction:'top', offset:[0,-10], opacity:0.95 });
+          m.addTo(eduLayer);
+        });
+      }
+      syncEdu();
     });
-    syncEdu();
   }
 
   function ensureHeat(done){
@@ -387,7 +387,11 @@
     if(heatPlastic && map.hasLayer(heatPlastic)) map.removeLayer(heatPlastic);
 
     var visible = CITIES.filter(cityVisible);
-    riskLayer = L.geoJSON(buildRiskGeo(), { style:polyStyle, interactive:false }).addTo(map);
+    if(currentBase === 'climate'){
+      riskLayer = L.geoJSON(buildRiskGeo(), { style:polyStyle, interactive:false }).addTo(map);
+    } else {
+      riskLayer = null;
+    }
 
     routeLayer = L.layerGroup();
     visible.forEach(function(c){
@@ -475,7 +479,13 @@
     document.querySelectorAll('#terraLayers .terra-lopt').forEach(function(el){
       el.classList.toggle('selected', el.dataset.layer===key);
     });
-    if(riskLayer) riskLayer.setStyle(polyStyle);
+    if(key==='climate'){
+      if(riskLayer) riskLayer.setStyle(polyStyle);
+      else riskLayer = L.geoJSON(buildRiskGeo(), { style:polyStyle, interactive:false }).addTo(map);
+    } else if(riskLayer){
+      map.removeLayer(riskLayer);
+      riskLayer = null;
+    }
   }
 
   function fitAll(){
@@ -497,7 +507,7 @@
     streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19, subdomains:'abc', keepBuffer:4, updateWhenZooming:false, detectRetina:false });
     topoLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', TILE_FAST);
     satLayer.addTo(map);
-    map.on('zoomend', syncEdu);
+    map.on('zoomend', function(){ rebuildEdu(); });
     map.on('dragstart zoomstart click', function(){ if(typeof bumpIdle === 'function') bumpIdle(); });
     rebuildOverlays();
     ready = true;
@@ -738,6 +748,9 @@
     var spinMs = reducedMotion() ? 800 : 5000;
     window.__spinBoost = reducedMotion() ? 0 : 0.042;
     if(window.__globeLook) window.__globeLook(city.ll[0], city.ll[1]);
+    var leafletReady = loadLeaflet().catch(function(){
+      if(window.GOO && GOO.Notify) GOO.Notify.toast({ tone:'amber', title:'Map tiles', sub:'Leaflet failed to load. Check the network.', n:'!' });
+    });
 
     function showWorldThenCity(){
       window.__spinBoost = 0;
@@ -746,22 +759,25 @@
       overlay.setAttribute('aria-hidden','false');
       overlay.removeAttribute('inert');
       document.body.classList.add('terra-open');
-      initMap();
-      renderRoadmap();
-      if(map){
-        map.setView([12, 20], 2, { animate:false });
-        map.invalidateSize();
-      }
-      setTimeout(function(){
-        if(map){
-          map.invalidateSize();
-          flyToCity(city, reducedMotion() ? 0 : 2.4);
-        }
-        if(appEl) appEl.classList.remove('globe-focus');
+      leafletReady.then(function(){
+        if(!window.L) return;
+        initMap();
         renderRoadmap();
-        cinematic = false;
-        bumpIdle();
-      }, 720);
+        if(map){
+          map.setView([12, 20], 2, { animate:false });
+          map.invalidateSize();
+        }
+        setTimeout(function(){
+          if(map){
+            map.invalidateSize();
+            flyToCity(city, reducedMotion() ? 0 : 2.4);
+          }
+          if(appEl) appEl.classList.remove('globe-focus');
+          renderRoadmap();
+          cinematic = false;
+          bumpIdle();
+        }, 720);
+      });
     }
     setTimeout(showWorldThenCity, spinMs);
   }

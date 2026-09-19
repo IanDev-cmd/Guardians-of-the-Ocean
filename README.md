@@ -16,18 +16,23 @@ Then open `http://127.0.0.1:8765/`. Mobile / standalone sessions land on the PWA
 
 | Path | Role |
 | --- | --- |
-| `index.html` | Device-aware entry redirect |
+| `index.html` | Device-aware entry redirect. Desktop lands on `save-the-earth (4).html` (the live desktop URL); that filename is kept on purpose. |
 | `save-the-earth (4).html` | Desktop / embed shell (markup + styles) |
+| `js/boot.js` | Lazy-loads Three.js + Leaflet when globe/map are needed |
 | `js/goo-core.js` | Device, sound, notifications |
 | `js/goo-compass.js` | GPS heading, elevation, map-ring HUD |
 | `js/goo-shell.js` | Install, share, tutorial, service worker |
-| `js/goo-globe.js` | Three.js globe |
+| `js/goo-globe.js` | Three.js globe (hardware LOD, deferred GPU init) |
 | `js/goo-cards.js` | Sidebar cards and globe chrome |
 | `js/goo-map.js` | Leaflet overlays and phase roadmap |
 | `js/pwa-app.js` | PWA clock and tile → 3D/2D loader |
 | `css/goo.css` | Shared chrome (toasts, compass, tutorial) |
+| `assets/3d/` | Globe preview sprite used before the canvas boots |
+| `assets/maps/` | City + school GeoJSON / JSON, loaded with the map |
+| `assets/images/` | Card and city photos (JPEG + WebP + small WebP) |
+| `assets/content/` | Static content indexes |
 | `pwa/island-weather-pwa/` | Ledger PWA shell |
-| `sw.js` | App-shell cache (network-first navigations) |
+| `sw.js` | App-shell cache (network-first navigations, cache-first tiles/images) |
 | `render.yaml` | Render static site (`guardians-of-the-ocean`) |
 
 Install uses `manifest.webmanifest` (`start_url` is the PWA). Hosted as a static site — not the weott-proposal-engine Render service.

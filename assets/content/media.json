@@ -1,0 +1,10 @@
+{
+  "cards": [
+    { "id": "thirsty", "src": "assets/images/cards/thirsty.webp" },
+    { "id": "jungle", "src": "assets/images/cards/jungle.webp" }
+  ],
+  "cities": [
+    "jakarta", "manila", "hcmc", "lagos", "miami",
+    "mumbai", "mombasa", "sydney", "capetown", "rotterdam"
+  ]
+}

@@ -11,6 +11,7 @@
   'use strict';
   var mount = document.getElementById('globeMount');
   if(!window.THREE || !mount) return;
+  if(mount.querySelector('canvas')) return;
 
   var R = 2;
   var scene  = new THREE.Scene();
@@ -19,11 +20,17 @@
 
   var conn = navigator.connection || navigator.mozConnection || {};
   var saveData = !!conn.saveData || /2g/.test(conn.effectiveType || '');
-  var low = saveData || (window.GOO && GOO.Device && GOO.Device.mobile);
-  var segs = low ? 32 : 48;
-  var renderer = new THREE.WebGLRenderer({ antialias:!low, alpha:true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, low ? 1.25 : 1.5));
+  var mem = navigator.deviceMemory || 8;
+  var cores = navigator.hardwareConcurrency || 8;
+  var mobile = !!(window.GOO && GOO.Device && GOO.Device.mobile);
+  var low = saveData || mobile || mem <= 2 || cores <= 2;
+  var mid = !low && (mem <= 4 || cores <= 4);
+  var segs = low ? 24 : mid ? 32 : 48;
+  var renderer = new THREE.WebGLRenderer({ antialias:!low, alpha:true, powerPreference: low ? 'low-power' : 'default' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, low ? 1 : mid ? 1.25 : 1.5));
   mount.appendChild(renderer.domElement);
+  var wrap = document.getElementById('globeWrap');
+  if(wrap) wrap.classList.add('globe-live');
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.45));
   var key = new THREE.DirectionalLight(0xffffff, 0.75);
@@ -87,18 +94,20 @@
     night:'https://threejs.org/examples/textures/planets/earth_lights_2048.jpg',
     marble:'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'
   };
-  if(!saveData) loader.load(TEX.default, applyTexture, undefined, function(){});
+  if(!saveData && !low) loader.load(TEX.default, applyTexture, undefined, function(){});
   window.__globeTex = function(key){
+    if(low && key === 'default') return;
     var url = TEX[key] || TEX.default;
     loader.load(url, applyTexture, undefined, function(){});
   };
   var idlePrefetch = window.requestIdleCallback || function(fn){ setTimeout(fn, 1800); };
   idlePrefetch(function(){
-    if(saveData) return;
+    if(saveData || low) return;
     var img = new Image();
     img.referrerPolicy = 'no-referrer';
     img.src = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/1/2';
   }, { timeout:2000 });
+  window.__globeReady = true;
 
   // additive fresnel halo — the luminous edge the reference has
   var fres = new THREE.ShaderMaterial({
@@ -160,7 +169,7 @@
       el.type = 'button';
       el.className = 'gpin' + (c.risk==='critical' ? ' crit' : c.risk==='elevated' ? ' elev' : '');
       el.dataset.id = c.id;
-      el.innerHTML = '<i></i><span>' + c.name + '</span>';
+      el.innerHTML = '<i></i><span>' + c.name.toUpperCase() + '</span>';
       el.addEventListener('click', function(ev){
         ev.stopPropagation();
         window.__chosenCity = c.id;
@@ -208,7 +217,6 @@
         c.el.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)';
         c.el.style.opacity = front ? '1' : '0';
         c.el.classList.toggle('front', front);
-        c.el.classList.toggle('flip', x > w * 0.58);
       });
     }
     renderer.render(scene, camera);

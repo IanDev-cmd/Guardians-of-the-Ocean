@@ -170,6 +170,10 @@
         setTimeout(function () { if (self.map) self.map.invalidateSize(); }, 80);
       }
       if (window.L) { make(); return; }
+      if (window.GOOLoad) {
+        window.GOOLoad.leaflet().then(make).catch(function () {});
+        return;
+      }
       if (document.getElementById('goLeaf')) {
         document.getElementById('goLeaf').addEventListener('load', make, { once: true });
         return;

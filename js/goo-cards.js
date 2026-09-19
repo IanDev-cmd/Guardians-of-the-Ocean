@@ -26,7 +26,7 @@ var CARDS = [
     text:"Arctic sea ice is thinning faster than the models once predicted, reshaping habitats for the species — and the communities — that depend on it." },
 
   { id:'thirsty', l1:'Quench the', l2:'Thirsty',
-    img:'photos/card-thirsty.jpg',
+    img:'assets/images/cards/thirsty.jpg',
     fall:'radial-gradient(circle at 74% 38%, #7fe3ff 0%, #2aa8e8 16%, #0d67b4 34%, #063f86 62%, #02255c 100%)',
     campaign:null,
     text:"Shifting rainfall and shrinking freshwater reserves put safe drinking water further out of reach for millions. Conservation starts with knowing where every drop goes." },
@@ -38,67 +38,67 @@ var CARDS = [
     text:"Birds cannot see glass and do not interpret windows as a barrier or a danger. Making matters worse, reflections of the sky and plant materials simulate a possible flight path that really does not exist. Luckily, the Zoo's Green Team of creative people began to work on practical solutions for making existing windows bird-" },
 
   { id:'jungle', l1:'Welcome to', l2:'the Jungle',
-    img:'photos/card-jungle.jpg',
+    img:'assets/images/cards/jungle.jpg',
     fall:'linear-gradient(170deg,#f2c489 0%,#b8803f 38%,#5a4526 72%,#2c2415 100%)',
     campaign:null,
     text:"Tropical forests hold more species than anywhere else on Earth. Keeping the canopy intact keeps that entire web of life standing." },
 
   { id:'jakarta', l1:'Jakarta', l2:'Indonesia', cityId:'jakarta',
-    img:'photos/city-jakarta.jpg',
+    img:'assets/images/cities/jakarta.jpg',
     fall:'linear-gradient(170deg,#1a6b8a,#0a3d5c)',
     campaign:'Pilot 01 · Critical',
     text:"Jakarta Bay North sits on one of the world’s fastest-sinking shorelines. Field ops install an erosion barrier along 8.5 km of bay, protecting 42,000 residents with 12 IoT gauges. Milestone: Bay Erosion Barrier Construction · $310k USD · Phase 1/4." },
 
   { id:'manila', l1:'Manila', l2:'Philippines', cityId:'manila',
-    img:'photos/city-manila.jpg',
+    img:'assets/images/cities/manila.jpg',
     fall:'linear-gradient(170deg,#0e6a7a,#083848)',
     campaign:'Pilot 02 · Critical',
     text:"Manila Bay’s reef line is being rebuilt with 2,500 coral modules and 15 co-ops. Fish biomass is already up 38%. Milestone: Artificial Reef Structure Deployment · $145k USD · Phase 3/4." },
 
   { id:'hcmc', l1:'Ho Chi Minh', l2:'Vietnam', cityId:'hcmc',
-    img:'photos/city-hcmc.jpg',
+    img:'assets/images/cities/hcmc.jpg',
     fall:'linear-gradient(170deg,#2a7a5a,#12382c)',
     campaign:'Pilot 03 · Critical',
     text:"The Mekong saline edge is replanted across 24 km, with 85,000 trees shielding 520 families from salt intrusion. Milestone: Delta Sediment & Vegetation Replanting · $210k USD · Phase 2/4." },
 
   { id:'lagos', l1:'Lagos', l2:'Nigeria', cityId:'lagos',
-    img:'photos/city-lagos.jpg',
+    img:'assets/images/cities/lagos.jpg',
     fall:'linear-gradient(170deg,#1c5c88,#0a2a44)',
     campaign:'Pilot 04 · Critical',
     text:"Barrier-island skimmers trap floating plastic along 14.2 km of Atlantic shore — 310 tonnes pulled this season. Milestone: Floating Waste Trap Deployment · $250k USD · Phase 2/4." },
 
   { id:'miami', l1:'Miami', l2:'USA', cityId:'miami',
-    img:'photos/city-miami.jpg',
+    img:'assets/images/cities/miami.jpg',
     fall:'linear-gradient(170deg,#1a8cb8,#0b4a68)',
     campaign:'Pilot 05 · Elevated',
     text:"Biscayne’s living shoreline mixes coral modules with hybrid dunes across 6.8 km. 1,200 coral fragments and 99.8% IoT uptime. Milestone: Living Shoreline Hybrid Modules · $400k USD · Phase 2/4." },
 
   { id:'mumbai', l1:'Mumbai', l2:'India', cityId:'mumbai',
-    img:'photos/city-mumbai.jpg',
+    img:'assets/images/cities/mumbai.jpg',
     fall:'linear-gradient(170deg,#3a5a88,#152438)',
     campaign:'Pilot 06 · Elevated',
     text:"The Mithi estuary reclaim has lifted 145 tonnes of waste from 600 hectares, with 8 telemetry buoys on the creek. Milestone: Mithi River Estuary Reclaim · $175k USD · Phase 3/4." },
 
   { id:'mombasa', l1:'Mombasa', l2:'Kenya', cityId:'mombasa',
-    img:'photos/city-mombasa.jpg',
+    img:'assets/images/cities/mombasa.jpg',
     fall:'linear-gradient(170deg,#0e7a72,#083830)',
     campaign:'Pilot 07 · Elevated',
     text:"Kilifi’s community estuary drive has planted 120,000 mangrove seeds and recovered 85 tonnes of waste with 320 operators. Milestone: Community Estuary Replanting · $120k USD · Phase 3/4." },
 
   { id:'sydney', l1:'Sydney', l2:'Australia', cityId:'sydney',
-    img:'photos/city-sydney.jpg',
+    img:'assets/images/cities/sydney.jpg',
     fall:'linear-gradient(170deg,#1a6a9a,#0a3048)',
     campaign:'Pilot 08 · Managed',
     text:"Harbour living-seawall tiles now cover 12.5 hectares, hosting 45 species across 850 habitat tiles. Milestone: Living Seawall Tile Expansion · $220k USD · Phase 4/4." },
 
   { id:'capetown', l1:'Cape Town', l2:'South Africa', cityId:'capetown',
-    img:'photos/city-capetown.jpg',
+    img:'assets/images/cities/capetown.jpg',
     fall:'linear-gradient(170deg,#3a6a88,#1a3048)',
     campaign:'Pilot 09 · Managed',
     text:"The Great African Seaforest audit maps 4,200 hectares of kelp canopy, 92 species, and 18 drone transects. Milestone: Great African Seaforest Audit · $180k USD · Phase 4/4." },
 
   { id:'rotterdam', l1:'Rotterdam', l2:'Netherlands', cityId:'rotterdam',
-    img:'photos/city-rotterdam.jpg',
+    img:'assets/images/cities/rotterdam.jpg',
     fall:'linear-gradient(170deg,#2a4a6a,#121c28)',
     campaign:'Pilot 10 · Managed',
     text:"Estuarine bio-parks turn 12 floating isles into habitat and 1.8 GWh of on-site energy, fully hashed on Hedera. Milestone: Estuarine Biodiversity Parks · $290k USD · Phase 4/4." }
@@ -465,6 +465,22 @@ document.addEventListener('pointerover', function(e){
 })();
 
 /* ------------------------------------------------------------- card list */
+function pictureHtml(c, eager){
+  if(!c.img) return '';
+  var local = c.img.indexOf('assets/images/') === 0;
+  var load = eager ? 'eager' : 'lazy';
+  var pri = eager ? ' fetchpriority="high"' : '';
+  var img = '<img src="' + c.img + '" alt="" width="480" height="320" loading="' + load + '" decoding="async"' + pri + '>';
+  if(!local) return img;
+  var webp = c.img.replace(/\.jpe?g$/i, '.webp');
+  var sm = c.img.replace(/\.jpe?g$/i, '-sm.webp');
+  return '<picture>' +
+    '<source type="image/webp" media="(max-width:760px)" srcset="' + sm + '">' +
+    '<source type="image/webp" media="(min-width:761px)" srcset="' + webp + '">' +
+    img +
+  '</picture>';
+}
+
 var moved = false;
 function buildCard(c, idx){
   var b = document.createElement('button');
@@ -474,9 +490,9 @@ function buildCard(c, idx){
   var eager = idx != null && idx < 3;
   b.innerHTML =
     '<div class="shot" style="background:' + c.fall + '">' +
-      (c.img ? '<img src="' + c.img + '" alt="" loading="' + (eager ? 'eager' : 'lazy') + '" decoding="async"' + (eager ? ' fetchpriority="high"' : '') + '>' : '') +
+      pictureHtml(c, eager) +
     '</div>' +
-    '<span class="cap"><span class="cap-kicker">' + c.l1 + '</span><span class="cap-title">' + c.l2 + '</span></span>';
+    '<span class="cap">' + c.l1 + '<br>' + c.l2 + '</span>';
   var im = b.querySelector('img');
   if(im) im.addEventListener('error', function(){ im.remove(); });
   b.addEventListener('click', function(){ if(moved){ moved = false; return; } open(c, b); });
@@ -484,8 +500,9 @@ function buildCard(c, idx){
 }
 
 function sizeCards(){
-  var h = 88;
-  var g = 12;
+  // card height is 15.1% of the frame, gap 1.36%
+  var h = innerHeight * 0.151;
+  var g = innerHeight * 0.0136;
   [].forEach.call(track.querySelectorAll('.card'), function(el){
     el.style.height = h + 'px';
     el.style.marginBottom = g + 'px';

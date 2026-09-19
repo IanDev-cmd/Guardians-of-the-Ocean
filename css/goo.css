@@ -1,51 +1,47 @@
 /* Guardians of the Ocean — shared chrome (install, compass, toasts, tutorial) */
 .n-bell{
-  position:fixed; top:14px; right:22px; z-index:40;
-  width:44px; height:44px; border:1px solid rgba(140,200,230,.18);
-  background:rgba(8,22,36,.72); color:#e8f7ff;
+  position:fixed; top:18px; right:118px; z-index:40;
+  width:44px; height:44px; border:1px solid rgba(255,255,255,.45);
+  background:rgba(255,255,255,.92); color:#12202c;
   display:flex; align-items:center; justify-content:center;
-  border-radius:50%; box-shadow:0 8px 20px rgba(0,10,24,.28);
-  backdrop-filter:blur(16px);
+  border-radius:50%; box-shadow:0 8px 20px rgba(0,16,40,.2);
 }
 html.embed .n-bell, html.mobile .n-bell{ right:16px; top:max(12px, env(safe-area-inset-top)); }
 .n-bell svg{ width:20px; height:20px; }
 .n-badge{
   position:absolute; top:-4px; right:-4px; min-width:16px; height:16px; padding:0 4px;
-  background:#e3593f; color:#fff; font:700 9px/16px 'Outfit',sans-serif;
+  background:#e3593f; color:#fff; font:700 9px/16px 'Space Grotesk',sans-serif;
   border-radius:99px;
 }
 .n-panel{
-  position:fixed; top:66px; right:18px; z-index:41; width:min(280px, calc(100vw - 32px));
-  background:#0b1c2c; color:#e8f7ff; padding:12px; display:none;
-  border:1px solid rgba(140,200,230,.16);
-  border-radius:16px; box-shadow:0 16px 40px rgba(0,10,24,.4);
+  position:fixed; top:68px; right:24px; z-index:41; width:min(280px, calc(100vw - 32px));
+  background:#fff; color:#12202c; padding:12px; display:none;
+  border-radius:16px; box-shadow:0 16px 40px rgba(0,16,40,.24);
 }
 .n-panel.open{ display:block; }
-.n-panel header{ font:700 11px/1 'Outfit',sans-serif; letter-spacing:.12em; color:#8fb3c8; margin-bottom:8px; }
+.n-panel header{ font:700 11px/1 'Space Grotesk',sans-serif; letter-spacing:.12em; color:#6b7268; margin-bottom:8px; }
 .n-row{ padding:8px; border-radius:10px; margin-bottom:4px; }
 .n-row b{ display:block; font-size:12px; }
-.n-row i{ display:block; font-style:normal; font-size:11px; color:#8fb3c8; }
-.n-row.tone-green{ background:rgba(46,160,110,.16); }
-.n-row.tone-blue{ background:rgba(92,225,255,.10); }
-.n-row.tone-amber{ background:rgba(255,193,74,.12); }
+.n-row i{ display:block; font-style:normal; font-size:11px; color:#5b6570; }
+.n-row.tone-green{ background:#e7f8ee; }
+.n-row.tone-blue{ background:#e7f1fb; }
+.n-row.tone-amber{ background:#fbf3e0; }
 
 .n-stack{
-  position:fixed; left:var(--dock-left, 12%); bottom:calc(var(--dock-bottom, 24px) + var(--hud, 44px) + 16px); z-index:45;
+  position:fixed; left:var(--dock-left, 12%); bottom:18%; z-index:45;
   display:flex; flex-direction:column; gap:8px; pointer-events:none;
 }
 html.mobile .n-stack, html.embed .n-stack{ left:12px; bottom:92px; }
 .n-toast{
   display:flex; align-items:center; gap:10px; min-width:220px; max-width:300px;
-  background:rgba(8,22,36,.88); padding:0 12px 0 14px; height:48px;
-  border:1px solid rgba(140,200,230,.16);
-  border-radius:14px; box-shadow:0 .55vw 1.5vw rgba(0,10,24,.36);
+  background:#fdfdfd; padding:0 12px 0 14px; height:48px;
+  border-radius:14px; box-shadow:0 .55vw 1.5vw rgba(0,16,40,.28);
   opacity:0; transform:translateX(-18px);
   transition:opacity .32s ease, transform .38s cubic-bezier(.22,.9,.28,1);
-  backdrop-filter:blur(16px);
 }
 .n-toast.show{ opacity:1; transform:translateX(0); }
-.n-toast .n-copy b{ display:block; font:700 12px/1.1 'Outfit',sans-serif; color:#e8f7ff; }
-.n-toast .n-copy i{ display:block; font:500 10px/1.3 'Outfit',sans-serif; color:#8fb3c8; font-style:normal; }
+.n-toast .n-copy b{ display:block; font:700 12px/1.1 'Space Grotesk',sans-serif; color:#1a2733; }
+.n-toast .n-copy i{ display:block; font:500 10px/1.3 'Space Grotesk',sans-serif; color:#6b7268; font-style:normal; }
 .n-dots{ display:flex; gap:3px; }
 .n-dots i{ width:5px; height:5px; border-radius:50%; background:#c8cdd2; }
 .n-toast.tone-green .n-dots i{ background:#1f9254; }
@@ -66,30 +62,26 @@ html.mobile .n-stack, html.embed .n-stack{ left:12px; bottom:92px; }
 .n-toast.tone-amber .n-ico{ background:#fbe8c4; }
 
 .install-app{
-  position:fixed; left:calc(var(--dock-left, 12%) + (var(--hud, 44px) * 4) + 38px); bottom:var(--dock-bottom, 24px); z-index:16;
-  display:flex; align-items:center; gap:10px; height:var(--hud, 44px);
-  background:rgba(8,22,36,.72); color:#e8f7ff; padding:0 16px 0 18px;
-  border:1px solid rgba(92,225,255,.28);
-  border-radius:999px; box-shadow:0 10px 24px rgba(0,10,24,.32), 0 0 18px rgba(92,225,255,.12);
-  font-family:'Outfit',sans-serif;
-  backdrop-filter:blur(16px);
+  position:fixed; left:calc(var(--dock-left, 12%) + 54px); bottom:3.4%; z-index:16;
+  display:flex; align-items:center; gap:10px;
+  background:#f3f1ea; color:#1a1a1a; padding:8px 14px 8px 18px;
+  border-radius:999px; box-shadow:0 10px 24px rgba(0,16,40,.22);
+  font-family:'Space Grotesk',sans-serif;
 }
 html.embed .install-app{ display:none; }
 .install-app button{
   border:none; background:none; padding:0; cursor:pointer; color:inherit;
-  font:700 12px/1 'Outfit',sans-serif; letter-spacing:.16em;
+  font:700 12px/1 'Space Grotesk',sans-serif; letter-spacing:.14em;
 }
-#installMain{ color:#7ee7ff; text-shadow:0 0 12px rgba(92,225,255,.4); }
 .install-app svg{ width:18px; height:18px; display:block; }
-#installApple, #installPlay{ width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:#d7ecf8; }
+#installApple, #installPlay{ width:28px; height:28px; display:flex; align-items:center; justify-content:center; }
 
 .compass-fab{
-  position:fixed; left:var(--dock-left, 12%); bottom:var(--dock-bottom, 24px); z-index:16;
-  width:var(--hud, 44px); height:var(--hud, 44px); border-radius:50%;
-  border:1px solid rgba(140,200,230,.18); background:rgba(8,22,36,.72); color:#e8f7ff;
+  position:fixed; left:var(--dock-left, 12%); bottom:3.4%; z-index:16;
+  width:46px; height:46px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.5); background:rgba(255,255,255,.94); color:#12202c;
   display:flex; align-items:center; justify-content:center;
-  box-shadow:0 8px 20px rgba(0,10,24,.28);
-  backdrop-filter:blur(16px);
+  box-shadow:0 8px 20px rgba(0,16,40,.22);
 }
 html.embed .compass-fab, html.mobile .compass-fab{ left:16px; bottom:max(24px, env(safe-area-inset-bottom)); }
 .compass-fab svg{ width:22px; height:22px; }
@@ -200,8 +192,8 @@ body.tut-on .app{ filter:none; }
 html.embed .rail .icons,
 html.embed .uxmodal,
 html.embed .nav{ display:none !important; }
-html.embed .hero h1{ font-size:clamp(32px, 11vw, 72px); }
-html.mobile .gsearch, html.mobile .topbar .gsearch{ width:min(360px, 58vw); }
+html.embed .hero h1{ font-size:clamp(28px, 11vw, 64px); }
+html.mobile .gsearch{ width:min(440px, 72vw); }
 
 .pwa-load{
   position:fixed; inset:0; z-index:70; display:none;
