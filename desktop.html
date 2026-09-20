@@ -1185,7 +1185,7 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
     --pwa-hit:clamp(40px, 12vw, 48px);
     --pwa-gap:clamp(6px, 2vw, 10px);
     --pwa-top:max(8px, env(safe-area-inset-top));
-    --pwa-side:calc(var(--pwa-gutter) + var(--pwa-hit) + var(--pwa-gap));
+    --pwa-side:calc(var(--pwa-gutter) + var(--pwa-hit) * 2 + var(--pwa-gap) * 2);
   }
   html.embed .n-bell{
     top:var(--pwa-top) !important;
@@ -1194,7 +1194,15 @@ body.terra-open .cursor, body.terra-open .ripple{ display:none !important; }
     width:var(--pwa-hit);
     height:var(--pwa-hit);
   }
-  html.embed body.terra-open .n-bell{ display:none !important; }
+  html.embed .n-avatar-fab{
+    top:var(--pwa-top) !important;
+    right:calc(var(--pwa-gutter) + var(--pwa-hit) + var(--pwa-gap)) !important;
+    left:auto !important;
+    width:var(--pwa-hit);
+    height:var(--pwa-hit);
+  }
+  html.embed body.terra-open .n-bell,
+  html.embed body.terra-open .n-avatar-fab{ display:none !important; }
   html.embed .gsearch{
     left:50% !important;
     right:auto !important;

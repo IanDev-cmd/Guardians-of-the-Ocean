@@ -91,9 +91,11 @@
         this.drawTicks(wrap.querySelector('.go-ticks'), wrap.querySelector('#goLabs'));
         var self = this;
         wrap.querySelectorAll('[data-cmode]').forEach(function (b) {
-          b.addEventListener('click', function () {
+          b.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
             Sound.click();
-            self.show();
+            self.setMode(b.getAttribute('data-cmode'));
           });
         });
         wrap.querySelector('#goCclose').addEventListener('click', function () {
@@ -205,10 +207,76 @@
       return names[idx];
     },
 
-    setMode: function () {
-      this.mode = 'rose';
+    setMode: function (mode) {
+      mode = mode === 'map' || mode === 'immersive' ? mode : 'rose';
+      this.mode = mode;
       if (!this.els.wrap) return;
-      this.els.wrap.classList.remove('map-on', 'immersive');
+      this.els.wrap.classList.toggle('map-on', mode === 'map' || mode === 'immersive');
+      this.els.wrap.classList.toggle('immersive', mode === 'immersive');
+      this.markTools(mode);
+      if (mode === 'map') {
+        this.openCoastalMap();
+        return;
+      }
+      if (mode === 'immersive') {
+        this.ensureMap();
+        Notify.toast({ tone: 'blue', title: 'Immersive heading', sub: 'Satellite ring locked to your GPS heading.', n: 'HUD' });
+      }
+    },
+
+    markTools: function (mode) {
+      var wrap = this.els.wrap;
+      if (!wrap) return;
+      wrap.querySelectorAll('[data-cmode]').forEach(function (b) {
+        b.classList.toggle('hash', b.getAttribute('data-cmode') !== mode);
+      });
+    },
+
+    openCoastalMap: function () {
+      var self = this;
+      function goPwa() {
+        try {
+          if (window.GOO && typeof window.GOO.openPwaView === 'function') {
+            self.hide();
+            window.GOO.openPwaView('map');
+            return true;
+          }
+        } catch (e) {}
+        try {
+          if (window.parent && window.parent !== window && window.parent.GOO && typeof window.parent.GOO.openPwaView === 'function') {
+            self.hide();
+            window.parent.GOO.openPwaView('map');
+            return true;
+          }
+        } catch (e2) {}
+        return false;
+      }
+      if (goPwa()) {
+        Notify.toast({ tone: 'blue', title: 'Coastal maps', sub: '2D shoreline layers from the live ledger.', n: 'MAP' });
+        return;
+      }
+      if (typeof window.openTerraRoadmap === 'function') {
+        self.hide();
+        window.openTerraRoadmap();
+        Notify.toast({ tone: 'blue', title: 'Coastal maps', sub: '2D shoreline layers from the live ledger.', n: 'MAP' });
+        return;
+      }
+      var tries = 0;
+      (function waitMap() {
+        if (goPwa()) return;
+        if (typeof window.openTerraRoadmap === 'function') {
+          self.hide();
+          window.openTerraRoadmap();
+          Notify.toast({ tone: 'blue', title: 'Coastal maps', sub: '2D shoreline layers from the live ledger.', n: 'MAP' });
+          return;
+        }
+        if (++tries < 25) {
+          setTimeout(waitMap, 120);
+          return;
+        }
+        self.ensureMap();
+        Notify.toast({ tone: 'blue', title: 'Map ring', sub: 'Satellite tiles locked to your GPS fix.', n: 'MAP' });
+      })();
     },
 
     ensureMap: function () {
@@ -217,14 +285,14 @@
         if (!window.L || !self.els.cmap) return;
         if (!self.map) {
           self.map = L.map(self.els.cmap, {
-            zoomControl: false, attributionControl: false, dragging: false,
-            scrollWheelZoom: false, doubleClickZoom: false, keyboard: false
+            zoomControl: false, attributionControl: false, dragging: true,
+            scrollWheelZoom: true, doubleClickZoom: true, keyboard: false
           });
           L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(self.map);
         }
         var ll = self.lat != null ? [self.lat, self.lng] : [0.05, 20];
         self.map.setView(ll, 15);
-        setTimeout(function () { if (self.map) self.map.invalidateSize(); }, 80);
+        setTimeout(function () { if (self.map) self.map.invalidateSize(); }, 200);
       }
       if (window.L) { make(); return; }
       if (window.GOOLoad) {
@@ -369,21 +437,21 @@
       this._absBound = false;
     },
 
-    show: function () {
+    show: function (mode) {
       try {
         var parent = window.parent;
         if (parent && parent !== window && parent.GOO && parent.GOO.Compass && parent.GOO.Compass !== this) {
-          parent.GOO.Compass.show();
+          parent.GOO.Compass.show(mode);
           return;
         }
       } catch (e) {}
       this.mount();
       this.open = true;
       this.els.wrap.classList.add('open');
-      this.setMode();
       this.startSensors();
       this.paint();
       Sound.success();
+      this.setMode(mode || 'rose');
     },
 
     hide: function () {

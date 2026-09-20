@@ -74,6 +74,31 @@
     document.addEventListener(ev, function () { Sound.unlock(); }, { once: true, passive: true });
   });
 
+  var CREW = [
+    { name: 'Amina Okonkwo', role: 'Lagos · waste traps', initials: 'AO', hue: '#0ba6ff', rating: 4.8, progress: 82 },
+    { name: 'Linh Tran', role: 'Mekong · mangroves', initials: 'LT', hue: '#16a34a', rating: 4.9, progress: 91 },
+    { name: 'Rafael Santos', role: 'Manila · reef line', initials: 'RS', hue: '#dc7519', rating: 4.5, progress: 64 },
+    { name: 'Maya Chen', role: 'Miami · living shore', initials: 'MC', hue: '#7c5cff', rating: 4.2, progress: 48 },
+    { name: 'Juma Mwangi', role: 'Mombasa · estuary', initials: 'JM', hue: '#0f8a78', rating: 4.7, progress: 73 }
+  ];
+
+  function starHtml(n) {
+    var html = '';
+    var i;
+    for (i = 1; i <= 5; i++) {
+      var cls = n >= i ? 'on' : (n >= i - 0.5 ? 'half' : '');
+      html += '<span class="' + cls + '" aria-hidden="true">★</span>';
+    }
+    return '<div class="n-crew-stars" aria-label="' + n.toFixed(1) + ' stars">' + html + '<em>' + n.toFixed(1) + '</em></div>';
+  }
+
+  function avaHtml(p, extra) {
+    return '<span class="n-ava' + (extra ? ' ' + extra : '') + '" style="--ava:' + p.hue + '">' +
+      '<i class="n-ava-ring" aria-hidden="true"></i>' +
+      '<b>' + esc(p.initials) + '</b>' +
+    '</span>';
+  }
+
   var Notify = {
     newsCount: 0,
     items: [],
@@ -81,6 +106,8 @@
     bell: null,
     badge: null,
     panel: null,
+    crewBtn: null,
+    crew: null,
     askedNative: false,
     ensure: function () {
       if (this.stack) return;
@@ -101,10 +128,13 @@
       this.panel.innerHTML = '<header>Coastal news</header><div class="n-list"></div>';
       document.body.appendChild(this.panel);
 
+      this.mountCrew();
+
       var self = this;
       this.bell.addEventListener('click', function (e) {
         e.stopPropagation();
         Sound.click();
+        self.closeCrew();
         self.panel.classList.toggle('open');
         self.newsCount = 0;
         self.syncBadge();
@@ -112,7 +142,67 @@
         self.requestNative();
       });
       this.panel.addEventListener('click', function (e) { e.stopPropagation(); });
-      document.addEventListener('click', function () { self.panel.classList.remove('open'); });
+      document.addEventListener('click', function () {
+        self.panel.classList.remove('open');
+        self.closeCrew();
+      });
+    },
+    mountCrew: function () {
+      if (this.crewBtn) return;
+      var lead = CREW[0];
+      this.crewBtn = document.createElement('button');
+      this.crewBtn.type = 'button';
+      this.crewBtn.className = 'n-avatar-fab';
+      this.crewBtn.setAttribute('aria-label', 'Field crew reviews');
+      this.crewBtn.innerHTML = avaHtml(lead, 'lead');
+      document.body.appendChild(this.crewBtn);
+
+      this.crew = document.createElement('div');
+      this.crew.className = 'n-crew';
+      this.crew.innerHTML =
+        '<div class="n-crew-card" role="dialog" aria-label="Field crew">' +
+          '<button type="button" class="n-crew-x" aria-label="Close crew">×</button>' +
+          '<div class="tpop-h">' +
+            '<span class="tpop-rank">C</span>' +
+            '<div><b>FIELD CREW</b><i>Reviews · milestone progress</i></div>' +
+            '<span class="tpop-ph">' + CREW.length + '</span>' +
+          '</div>' +
+          '<div class="n-crew-list">' +
+            CREW.map(function (p, i) {
+              return '<article class="n-crew-row" style="--d:' + (i * 80) + 'ms;--p:' + p.progress + '%">' +
+                avaHtml(p) +
+                '<div class="n-crew-meta">' +
+                  '<b>' + esc(p.name) + '</b>' +
+                  '<i>' + esc(p.role) + '</i>' +
+                  starHtml(p.rating) +
+                  '<div class="n-crew-track" aria-label="' + p.progress + '% complete">' +
+                    '<span class="n-crew-bar"><i></i></span>' +
+                    '<em>' + p.progress + '%</em>' +
+                  '</div>' +
+                '</div>' +
+              '</article>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(this.crew);
+
+      var self = this;
+      this.crewBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        Sound.click();
+        self.panel.classList.remove('open');
+        self.crew.classList.toggle('open');
+      });
+      this.crew.addEventListener('click', function (e) {
+        if (e.target === self.crew || (e.target.closest && e.target.closest('.n-crew-x'))) {
+          self.closeCrew();
+          return;
+        }
+        e.stopPropagation();
+      });
+    },
+    closeCrew: function () {
+      if (this.crew) this.crew.classList.remove('open');
     },
     syncBadge: function () {
       if (!this.badge) return;

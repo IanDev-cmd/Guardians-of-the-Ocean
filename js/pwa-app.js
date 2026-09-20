@@ -66,6 +66,7 @@
       if (Notify) Notify.toast({ tone:'blue', title:'Live feed', sub:'Mobile 3D / 2D maps from the web app.', n:'📡' });
     }, 700);
   }
+  if (window.GOO) window.GOO.openPwaView = openWebView;
 
   document.getElementById('pwaCloseView') && document.getElementById('pwaCloseView').addEventListener('click', function(){
     frameEl.classList.remove('show');

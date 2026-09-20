@@ -163,7 +163,7 @@
   function bindSounds() {
     var last = null;
     document.addEventListener('pointerover', function (e) {
-      var t = e.target.closest && e.target.closest('button, .card, .icon-wrap, .tile, .terra-filter, a.share-link, .n-bell');
+      var t = e.target.closest && e.target.closest('button, .card, .icon-wrap, .tile, .terra-filter, a.share-link, .n-bell, .n-avatar-fab');
       if (!t || t === last) return;
       last = t;
       Sound.hover();
