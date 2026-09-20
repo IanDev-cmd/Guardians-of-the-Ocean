@@ -851,7 +851,7 @@
     else fitAll();
   });
   var gpsBtn = document.getElementById('terraGpsCompass');
-  if(gpsBtn) gpsBtn.addEventListener('click', function(){ if(window.GOO && GOO.Compass) GOO.Compass.show('map'); });
+  if(gpsBtn) gpsBtn.addEventListener('click', function(){ if(window.GOO && GOO.Compass) GOO.Compass.show(); });
   var pathBtn = document.getElementById('terraViewPath');
   var cycleBtn = document.getElementById('terraViewCycle');
   var rmClose = document.getElementById('rmClose');

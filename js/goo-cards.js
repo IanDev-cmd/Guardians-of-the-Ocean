@@ -11,7 +11,7 @@ var CARDS = [
     img: W + 'Green%20Sea%20Turtle%20grazing%20seagrass.jpg?width=480',
     fall:'linear-gradient(170deg,#3fc4e8,#0b6ba8 60%,#07406e)',
     campaign:null,
-    text:"Warming, acidifying seas are unravelling the food webs that ocean life depends on. Protecting coastal habitats and cutting emissions gives marine species a fighting chance." },
+    text:"More than a football field of coral and mangrove is lost every hour. From bleaching reefs to vanishing shorelines, the consequences of a warming ocean are far reaching." },
 
   { id:'climate', l1:'Climate', l2:'Change',
     img: W + 'Sossusvlei%20Dune%20Namib%20Desert%20Namibia%20Luca%20Galuzzi%202004.JPG?width=480',
@@ -257,8 +257,8 @@ document.addEventListener('pointerover', function(e){
     wallet:{ num:'10', cat:'TREASURY', title:'Wallet Overview', sub:'TREASURY BALANCE HUB',
       section:'Fund Allocation', accent:'#16a34a', hero:'wallet',
       rows:[
-        {icon:'wallet', title:'Operating Wallet Balance', sub:'USDC / stablecoin reserve', status:{t:'ok', text:'FUNDED'}},
-        {icon:'clock', title:'Payout Queue', sub:'Scheduled disbursements', status:{t:'warn', text:'12 PENDING'}},
+        {icon:'wallet', title:'Operating Wallet Balance', sub:'USDC / stablecoin reserve', status:{t:'warn', text:'EMPTY'}},
+        {icon:'clock', title:'Payout Queue', sub:'Open Checkout sessions (24h)', status:{t:'ok', text:'0 PENDING'}},
         {icon:'pie', title:'Spend Category Breakdown', sub:'Field vs. operations split', status:{t:'ok', text:'85/15 SPLIT'}}
       ], tags:['Ledger Summary','Ledger Detail','Ledger Archive'], history:'View Ledger History' },
 
@@ -322,14 +322,12 @@ document.addEventListener('pointerover', function(e){
   var LEDGER_LISTS = {
     summary: [
       { t:'Operating cash', s:'Stripe available balance', a:'$0.00' },
-      { t:'Payout queue', s:'Scheduled field disbursements', a:'12 pending' },
+      { t:'Payout queue', s:'Open Checkout sessions (24h)', a:'0 pending' },
       { t:'Spend split', s:'Field ops / treasury', a:'85 / 15' },
-      { t:'Restoration credit', s:'Checkout session', a:'Ready' }
+      { t:'Restoration credit', s:'Paid one-off orders', a:'$0.00' }
     ],
     history: [
       { t:'Treasury opened', s:'Wallet Overview · live Stripe', a:'—' },
-      { t:'Payout queue synced', s:'12 operators awaiting release', a:'Queued' },
-      { t:'HCS topic linked', s:'Field ops 85% · treasury 15%', a:'Live' },
       { t:'Checkout', s:'No settled charges yet', a:'$0.00' }
     ]
   };
@@ -494,12 +492,10 @@ document.addEventListener('pointerover', function(e){
       openLedgerSheet(led.getAttribute('data-ledger'));
       return;
     }
-    if (ev.target.id === 'uxFundRefresh' || ev.target.id === 'uxPayRefresh') loadBalances();
+    if (ev.target.id === 'uxFundRefresh' || ev.target.id === 'uxPayRefresh') {
+      if (window.GooWallet) window.GooWallet.reload();
+    }
   });
-  if (checkoutEmail) {
-    checkoutEmail.addEventListener('change', loadBalances);
-    checkoutEmail.addEventListener('blur', loadBalances);
-  }
   modal.addEventListener('click', function(ev){ if(ev.target === modal) closeCard(); });
 
   stepUp.addEventListener('click', function(){ shiftTag(-1); });
@@ -534,64 +530,40 @@ document.addEventListener('pointerover', function(e){
   }
 
   var checkoutWrap = document.getElementById('uxCheckoutWrap');
-  var checkoutBtn = document.getElementById('uxCheckout');
-  var checkoutEmail = document.getElementById('uxCheckoutEmail');
-  if (checkoutEmail) {
-    checkoutEmail.value = localStorage.getItem('goo-checkout-email') || '';
-  }
 
-  function setText(id, value){
-    var el = document.getElementById(id);
-    if (el) el.textContent = value == null ? '—' : String(value);
-  }
-
-  function paintWallet(balance) {
+  function applyLedgerToCard(ledger, meta) {
     var rows = DATA.wallet.rows;
-    if (!rows || !balance) return;
-    var fund = balance.fund || {};
-    var personal = balance.personal || {};
-    var avail = (fund.available && fund.available.label) || (balance.operating && balance.operating.label) || '$0.00';
-    var settled = (fund.paid && fund.paid.label) || (balance.ledger && balance.ledger.paid) || '$0.00';
-    var split = fund.split && fund.split.label ? fund.split.label.replace(' SPLIT', '') : (balance.spendSplit && balance.spendSplit.label ? balance.spendSplit.label.replace(' SPLIT', '') : '85/15');
+    if (!rows) return;
+    if (!ledger) {
+      rows[0].sub = 'Connect treasury API to show live Stripe balances';
+      if (current === 'wallet') elRows.innerHTML = rows.map(renderRow).join('');
+      return;
+    }
+    var fund = ledger.fund || {};
+    var personal = ledger.personal || {};
+    var avail = meta && meta.avail ? meta.avail : '$0.00';
+    var settled = meta && meta.settled ? meta.settled : '$0.00';
+    var split = meta && meta.split ? meta.split : '85/15';
+    var pendingCount = meta && meta.pendingCount != null ? meta.pendingCount : 0;
     rows[0].sub = avail + ' · live Stripe available';
-    rows[0].status = { t: (fund.available && fund.available.cents > 0) || (balance.operating && balance.operating.cents > 0) ? 'ok' : 'warn', text: (fund.available && fund.available.status) || (balance.operating && balance.operating.status) || 'EMPTY' };
-    rows[1].sub = 'Scheduled disbursements + Stripe pending';
-    rows[1].status = { t: 'warn', text: balance.payoutQueue && balance.payoutQueue.label ? balance.payoutQueue.label : '0 PENDING' };
-    rows[2].status = { t: 'ok', text: balance.spendSplit && balance.spendSplit.label ? balance.spendSplit.label : '85/15 SPLIT' };
+    rows[0].status = { t: fund.available && fund.available.cents > 0 ? 'ok' : 'warn', text: (fund.available && fund.available.status) || 'EMPTY' };
+    rows[1].sub = 'Open Checkout sessions (24h)';
+    rows[1].status = { t: pendingCount > 0 ? 'warn' : 'ok', text: pendingCount + ' PENDING' };
+    rows[2].status = { t: 'ok', text: fund.split && fund.split.label ? fund.split.label : '85/15 SPLIT' };
     LEDGER_LISTS.summary[0].a = avail;
-    LEDGER_LISTS.summary[1].a = balance.payoutQueue && balance.payoutQueue.label ? balance.payoutQueue.label : '0 pending';
+    LEDGER_LISTS.summary[1].a = pendingCount + ' pending';
     LEDGER_LISTS.summary[2].a = split;
     LEDGER_LISTS.summary[3].a = settled;
     if (personal.recent && personal.recent.length) {
       LEDGER_LISTS.history = personal.recent.map(function(r){
         return { t: r.status === 'paid' ? 'Payout settled' : 'Payout ' + r.status, s: (personal.email || 'order') + ' · ' + r.id.slice(-8), a: r.amount };
       });
+    } else {
+      LEDGER_LISTS.history = [
+        { t: 'Checkout', s: personal.email ? personal.email + ' · no orders yet' : 'No settled charges yet', a: '$0.00' }
+      ];
     }
-    setText('uxFundAvail', avail);
-    setText('uxFundPaid', settled);
-    setText('uxFundSplit', split);
-    setText('uxFundLive', balance.live ? 'LIVE' : 'OFF');
-    setText('uxFundLine', settled + ' settled · Field ops 85% · treasury 15%');
-    setText('uxPayPaid', personal.paid && personal.paid.label ? personal.paid.label : '$0.00');
-    setText('uxPayPend', personal.pending && personal.pending.label ? personal.pending.label : '$0.00');
-    setText('uxPayCount', String((personal.paid && personal.paid.count || 0) + (personal.pending && personal.pending.count || 0)));
-    setText('uxPayStatus', personal.status || 'EMAIL');
-    setText('uxPayLine', personal.email
-      ? (personal.status === 'LINKED' ? personal.email + ' · Stripe + Postgres' : personal.email + ' · no orders yet')
-      : 'Enter email to load your payouts');
     if (current === 'wallet') elRows.innerHTML = rows.map(renderRow).join('');
-  }
-
-  function loadBalances() {
-    if (!window.GooStripe || !window.GooStripe.fetchBalance) return;
-    var email = checkoutEmail ? checkoutEmail.value.trim() : (localStorage.getItem('goo-checkout-email') || '');
-    window.GooStripe.fetchBalance(email).then(paintWallet).catch(function () {
-      DATA.wallet.rows[0].sub = 'Connect treasury API to show live Stripe balances';
-      setText('uxFundLive', 'OFF');
-      setText('uxFundLine', 'Treasury API unreachable');
-      setText('uxPayLine', 'Could not load personal payouts');
-      if (current === 'wallet') elRows.innerHTML = DATA.wallet.rows.map(renderRow).join('');
-    });
   }
 
   function syncCheckout(id) {
@@ -599,34 +571,14 @@ document.addEventListener('pointerover', function(e){
     var on = id === 'wallet';
     checkoutWrap.classList.toggle('show', on);
     checkoutWrap.hidden = !on;
-    if (on) loadBalances();
+    if (window.GooWallet) window.GooWallet.setActive(on);
   }
 
-  if (checkoutBtn) {
-    checkoutBtn.addEventListener('click', function () {
-      if (checkoutBtn.disabled) return;
-      var email = checkoutEmail ? checkoutEmail.value.trim() : '';
-      if (!email || email.indexOf('@') < 0) {
-        showToast('Enter a valid email for Checkout');
-        if (checkoutEmail) checkoutEmail.focus();
-        return;
-      }
-      localStorage.setItem('goo-checkout-email', email);
-      if (!window.GooStripe || !window.GooStripe.startCheckout) {
-        showToast('Checkout is not available');
-        return;
-      }
-      checkoutBtn.disabled = true;
-      checkoutBtn.setAttribute('aria-busy', 'true');
-      checkoutBtn.classList.add('is-loading');
-      window.GooStripe.startCheckout(email, 'payment').then(function (session) {
-        window.location.href = session.url;
-      }).catch(function (err) {
-        checkoutBtn.disabled = false;
-        checkoutBtn.setAttribute('aria-busy', 'false');
-        checkoutBtn.classList.remove('is-loading');
-        showToast(err && err.message ? err.message : 'Checkout failed');
-      });
+  if (window.GooWallet) {
+    window.GooWallet.bind({
+      source: 'desktop',
+      onPaint: applyLedgerToCard,
+      onError: function (msg) { showToast(msg); }
     });
   }
 

@@ -22,13 +22,14 @@
   }
   updateClock();
   setInterval(updateClock, 15000);
+  if (typeof window.fitGooPwa === 'function') window.fitGooPwa();
 
   var ICONS = [
     { id:'globe', label:'3D Earth', svg:'<circle cx="12" cy="12" r="9" stroke-width="1.4"/><ellipse cx="12" cy="12" rx="4" ry="9" stroke-width="1.4"/><path d="M3 12h18" stroke-width="1.4"/>', open:'globe' },
     { id:'audit', label:'Verified Audit Trail', svg:'<path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3Z" stroke-width="1.4" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
       card:{ rank:'01', title:'VERIFIED AUDIT', sub:'Hedera consensus', badge:'LIVE', kpis:[{n:'100%',l:'IMMUTABLE'},{n:'48.2k',l:'CHECKS'},{n:'3.2s',l:'FINALITY'}], fund:'On-chain state proofs across 8 countries', ctas:[{id:'openMap', label:'OPEN MAP', view:'map'},{id:'hash', label:'HASHSCAN', cls:'hash', view:'map'}] } },
     { id:'vault', label:'Secure Asset Vault', svg:'<rect x="5" y="11" width="14" height="9" rx="2" stroke-width="1.4"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke-width="1.4"/><circle cx="12" cy="15.5" r="1.2" stroke-width="1.4"/>',
-      card:{ rank:'02', title:'SECURE VAULT', sub:'Multi-sig reserve', badge:'LOCK', kpis:[{n:'$1.25M',l:'TVL'},{n:'3',l:'VAULTS'},{n:'2/3',l:'SIGNERS'}], fund:'Cold storage 82% · session keys 24h', ctas:[{id:'openWallet', label:'WALLET', view:'wallet'},{id:'hash', label:'ACCESS LOG', cls:'hash', view:'wallet'}] } },
+      card:{ rank:'02', title:'SECURE VAULT', sub:'Multi-sig reserve', badge:'DEMO', kpis:[{n:'—',l:'TVL'},{n:'3',l:'VAULTS'},{n:'2/3',l:'SIGNERS'}], fund:'Demo tile — not live Stripe balances', ctas:[{id:'openWallet', label:'WALLET', view:'wallet'},{id:'hash', label:'ACCESS LOG', cls:'hash', view:'wallet'}] } },
     { id:'roadmap', label:'2D Coastal Maps', svg:'<path d="M4 18c3-6 6-2 9-8 2-4 4-4 7-4" stroke-width="1.4" stroke-linecap="round"/><circle cx="4" cy="18" r="1.2" stroke-width="1.4"/><circle cx="20" cy="6" r="1.2" stroke-width="1.4"/>', open:'map' },
     { id:'proof', label:'Proof of Execution', svg:'<path d="M6 3h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3V3Z" stroke-width="1.3" stroke-linejoin="round"/><path d="M8.5 8h7M8.5 11.5h7M8.5 15h4" stroke-width="1.3" stroke-linecap="round"/>',
       card:{ rank:'04', title:'PROOF OF EXECUTION', sub:'Downloadable records', badge:'PDF', kpis:[{n:'12.4k',l:'RECORDS'},{n:'HCS',l:'HASHED'},{n:'100%',l:'LINKED'}], fund:'Each PDF carries a live Hedera transaction hash', ctas:[{id:'openMap', label:'OPEN MAP', view:'map'},{id:'hash', label:'RECEIPTS', cls:'hash', view:'map'}] } },
@@ -42,12 +43,12 @@
       card:{ rank:'08', title:'CLEAN ENERGY GRID', sub:'Solar field stations', badge:'3.2', kpis:[{n:'3.2',l:'GWH'},{n:'1.4k',l:'MWH'},{n:'99.2%',l:'UPTIME'}], fund:'Tokenized surplus as energy credits', ctas:[{id:'openMap', label:'OPEN MAP', view:'map'},{id:'hash', label:'GRID', cls:'hash', view:'globe'}] } },
     { id:'treasury', label:'Fiat & Token Treasury', svg:'<path d="M4 9V7a2 2 0 0 1 2-2h9" stroke-width="1.4" stroke-linecap="round"/><path d="M4 8a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" stroke-width="1.4" stroke-linejoin="round"/><circle cx="16.3" cy="12.5" r="0.9" stroke-width="1.4"/>', pay:true },
     { id:'grants', label:'Grants & Micro-Stipends', svg:'<path d="M3 12l4-4 3 2 3-2 4 4-2 2-2-1-2 2-2-1-2 1-2-2Z" stroke-width="1.3" stroke-linejoin="round"/>',
-      card:{ rank:'10', title:'GRANTS & STIPENDS', sub:'Field operators', badge:'$142k', kpis:[{n:'$142k',l:'PAID'},{n:'320',l:'OPS'},{n:'85%',l:'FIELD'}], fund:'Micro-stipends to verified local operators', ctas:[{id:'openWallet', label:'WALLET', view:'wallet'},{id:'hash', label:'MILESTONE', cls:'hash', view:'milestone'}] } },
+      card:{ rank:'10', title:'GRANTS & STIPENDS', sub:'Field operators', badge:'DEMO', kpis:[{n:'—',l:'PAID'},{n:'320',l:'OPS'},{n:'85%',l:'FIELD'}], fund:'Demo tile — live payouts are on the treasury card', ctas:[{id:'openWallet', label:'WALLET', view:'wallet'},{id:'hash', label:'MILESTONE', cls:'hash', view:'milestone'}] } },
     { id:'hashscan', label:'On-Chain HashScan', svg:'<path d="M14 4h6v6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 4l-9 9" stroke-width="1.4" stroke-linecap="round"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
       card:{ rank:'11', title:'ON-CHAIN HASHSCAN', sub:'Network explorer', badge:'HCS', kpis:[{n:'3.2s',l:'FINALITY'},{n:'#58.2M',l:'BLOCK'},{n:'0.001',l:'HBAR'}], fund:'Average network fee on mirrored proofs', ctas:[{id:'openMap', label:'OPEN MAP', view:'map'},{id:'hash', label:'EXPLORER', cls:'hash', view:'map'}] } }
   ];
 
-  var APP = '../../save-the-earth%20(4).html';
+  var APP = '../../desktop.html';
   var loadEl = document.getElementById('pwaLoad');
   var frameEl = document.getElementById('pwaFrame');
   var iframe = document.getElementById('pwaIframe');
@@ -75,88 +76,22 @@
         if (Compass) Compass.show();
       });
 
-  function bindPay(){
-    var payEmail = document.getElementById('pwaPayEmail');
-    var payBtn = document.getElementById('pwaCheckout');
+  function bindWalletView() {
     var walletBtn = document.getElementById('pwaWalletView');
-    if (payEmail) payEmail.value = localStorage.getItem('goo-checkout-email') || '';
+    if (!walletBtn || walletBtn.dataset.gooBound) return;
+    walletBtn.dataset.gooBound = '1';
+    walletBtn.addEventListener('click', function () { openWebView('wallet'); });
+  }
 
-    function paintPay(b) {
-      var fund = b.fund || {};
-      var personal = b.personal || {};
-      var op = document.getElementById('pwaBalOp');
-      var paid = document.getElementById('pwaBalPaid');
-      var pend = document.getElementById('pwaBalPend');
-      var split = document.getElementById('pwaBalSplit');
-      var fundLine = document.getElementById('pwaBalFund');
-      var liveEl = document.getElementById('pwaPayLive');
-      var you = document.getElementById('pwaBalYou');
-      var orders = document.getElementById('pwaBalOrders');
-      var status = document.getElementById('pwaPayStatus');
-      var line = document.getElementById('pwaPayLine');
-      var avail = (fund.available && fund.available.label) || (b.operating && b.operating.label) || '—';
-      var settled = (fund.paid && fund.paid.label) || (b.ledger && b.ledger.paid) || '—';
-      var splitLbl = fund.split && fund.split.label ? fund.split.label.replace(' SPLIT', '') : (b.spendSplit && b.spendSplit.label ? b.spendSplit.label.replace(' SPLIT', '') : '85/15');
-      if (op) op.textContent = avail;
-      if (paid) paid.textContent = settled;
-      if (pend) pend.textContent = personal.pending && personal.pending.label ? personal.pending.label : (b.payoutQueue && b.payoutQueue.count != null ? String(b.payoutQueue.count) : '—');
-      if (split) split.textContent = splitLbl;
-      if (fundLine) fundLine.textContent = settled + ' settled · Field ops 85% · HCS';
-      if (liveEl) liveEl.textContent = b.live ? 'LIVE' : 'OFF';
-      if (you) you.textContent = personal.paid && personal.paid.label ? personal.paid.label : '$0.00';
-      if (orders) orders.textContent = String((personal.paid && personal.paid.count || 0) + (personal.pending && personal.pending.count || 0));
-      if (status) status.textContent = personal.status || 'EMAIL';
-      if (line) {
-        line.textContent = personal.email
-          ? (personal.status === 'LINKED' ? personal.email + ' · Stripe + Postgres' : personal.email + ' · no orders yet')
-          : 'Enter email to load your payouts';
+  function bindPay(){
+    if (!window.GooWallet) return;
+    window.GooWallet.bind({
+      source: 'pwa',
+      onError: function (msg) {
+        if (Notify) Notify.toast({ tone: 'amber', title: 'Checkout', sub: msg, n: '$' });
       }
-    }
-
-    function loadPay() {
-      var email = (payEmail && payEmail.value.trim()) || localStorage.getItem('goo-checkout-email') || '';
-      if (!window.GooStripe || !window.GooStripe.fetchBalance) return;
-      window.GooStripe.fetchBalance(email).then(paintPay).catch(function () {
-        paintPay({ live: false, operating: { label: '$0.00' }, payoutQueue: { count: 0 }, spendSplit: { label: '85/15' }, ledger: { paid: '$0.00' }, personal: { status: 'OFF' } });
-      });
-    }
-
-    if (window.GooStripe && window.GooStripe.fetchBalance) loadPay();
-    if (payEmail) {
-      payEmail.addEventListener('change', loadPay);
-      payEmail.addEventListener('blur', loadPay);
-    }
-
-    if (payBtn) {
-      payBtn.addEventListener('click', function () {
-        var email = (payEmail && payEmail.value.trim()) || '';
-        if (!email || email.indexOf('@') < 0) {
-          if (payEmail) {
-            payEmail.focus();
-            payEmail.placeholder = 'Email required';
-          }
-          if (Notify) Notify.toast({ tone: 'amber', title: 'Email needed', sub: 'Enter an email to start Checkout.', n: '$' });
-          return;
-        }
-        localStorage.setItem('goo-checkout-email', email);
-        if (!window.GooStripe || !window.GooStripe.startCheckout) {
-          if (Notify) Notify.toast({ tone: 'amber', title: 'Checkout offline', sub: 'Treasury API is not configured.', n: '$' });
-          return;
-        }
-        payBtn.disabled = true;
-        payBtn.textContent = '…';
-        window.GooStripe.startCheckout(email, 'payment').then(function (session) {
-          window.location.href = session.url;
-        }).catch(function (err) {
-          payBtn.disabled = false;
-          payBtn.textContent = 'CHECKOUT';
-          if (Notify) Notify.toast({ tone: 'amber', title: 'Checkout failed', sub: err && err.message ? err.message : 'Try again.', n: '$' });
-        });
-      });
-    }
-    if (walletBtn) {
-      walletBtn.addEventListener('click', function () { openWebView('wallet'); });
-    }
+    });
+    bindWalletView();
   }
 
   function payCardHtml(){

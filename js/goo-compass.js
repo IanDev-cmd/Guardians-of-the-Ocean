@@ -93,7 +93,7 @@
         wrap.querySelectorAll('[data-cmode]').forEach(function (b) {
           b.addEventListener('click', function () {
             Sound.click();
-            self.setMode(b.getAttribute('data-cmode'));
+            self.show();
           });
         });
         wrap.querySelector('#goCclose').addEventListener('click', function () {
@@ -205,15 +205,10 @@
       return names[idx];
     },
 
-    setMode: function (mode) {
-      this.mode = mode;
+    setMode: function () {
+      this.mode = 'rose';
       if (!this.els.wrap) return;
-      this.els.wrap.classList.toggle('map-on', mode === 'map');
-      this.els.wrap.classList.toggle('immersive', mode === 'immersive');
-      if (mode === 'map' || mode === 'immersive') this.ensureMap();
-      if (mode === 'immersive') {
-        Notify.toast({ tone: 'blue', title: 'Immersive heading', sub: 'Arrow glows by alignment to north and your target city.', n: 'HUD' });
-      }
+      this.els.wrap.classList.remove('map-on', 'immersive');
     },
 
     ensureMap: function () {
@@ -374,11 +369,18 @@
       this._absBound = false;
     },
 
-    show: function (mode) {
+    show: function () {
+      try {
+        var parent = window.parent;
+        if (parent && parent !== window && parent.GOO && parent.GOO.Compass && parent.GOO.Compass !== this) {
+          parent.GOO.Compass.show();
+          return;
+        }
+      } catch (e) {}
       this.mount();
       this.open = true;
       this.els.wrap.classList.add('open');
-      this.setMode(mode || 'rose');
+      this.setMode();
       this.startSensors();
       this.paint();
       Sound.success();

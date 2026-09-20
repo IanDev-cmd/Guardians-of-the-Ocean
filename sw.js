@@ -1,7 +1,8 @@
-const CACHE_NAME = 'guardians-ocean-v23';
+const CACHE_NAME = 'guardians-ocean-v25';
 const ASSETS = [
   './',
   './index.html',
+  './desktop.html',
   './save-the-earth (4).html',
   './success.html',
   './cart.html',
@@ -12,6 +13,9 @@ const ASSETS = [
   './js/boot.js',
   './js/goo-config.js',
   './js/goo-stripe.js',
+  './js/api/config.js',
+  './js/api/client.js',
+  './js/api/wallet-ui.js',
   './js/goo-compass.js',
   './js/goo-shell.js',
   './js/goo-globe.js',

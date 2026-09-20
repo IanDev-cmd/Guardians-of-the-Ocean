@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b1210">
-<title>Global Impact Ledger</title>
+<title>Save the Ocean</title>
 <link rel="manifest" href="../../manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../css/goo.css">
 <style>
   :root{
@@ -20,8 +20,9 @@
     --card-icon:#20241f;
     --accent:#84c02c;
     --divider:rgba(255,255,255,0.35);
-    --tile: clamp(70px, 20vmin, 86px);
-    --gap: clamp(8px, 2.1vmin, 12px);
+    --tile: 72px;
+    --gap: 10px;
+    --grid-w: min(100%, calc(var(--tile) * 4 + var(--gap) * 3));
   }
 
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -65,14 +66,36 @@
     padding-bottom: max(16px, env(safe-area-inset-bottom));
     padding-left: clamp(14px, 4vw, 28px);
     overflow:hidden;
-    --grid-w: min(
-      100%,
-      calc(var(--tile) * 4 + var(--gap) * 3),
-      calc((100dvh - 360px) * 1.28)
-    );
   }
 
-  .headline, .subtext{ display:none !important; }
+  .pwa-hero{
+    display:none;
+    position:fixed;
+    left:clamp(20px, 4vw, 56px);
+    top:13.9%;
+    width:min(34vw, 380px);
+    z-index:4;
+    color:#fff;
+    pointer-events:none;
+    text-shadow:0 10px 28px rgba(0,20,40,.28);
+    font-family:'Quicksand', sans-serif;
+  }
+  .pwa-hero h1{
+    margin:0;
+    font-size:clamp(40px, 6.2vw, 84px);
+    font-weight:700;
+    line-height:.97;
+    letter-spacing:-.005em;
+  }
+  .pwa-hero p{
+    margin:2.2vh 0 0;
+    width:min(93%, 38ch);
+    font-size:clamp(13px, 1.35vw, 18px);
+    font-weight:600;
+    line-height:1.72;
+    color:rgba(255,255,255,.92);
+  }
+  .headline, .subtext{ display:none; }
   .info{
     display:flex;
     flex-direction:column;
@@ -268,16 +291,29 @@
     flex:0 0 auto;
   }
 
-  @media (max-height: 560px){
-    .subtext{ display:none; }
-    .headline{ font-size: clamp(22px, 6vh, 36px); }
-    .time{ margin-top:6px; font-size: clamp(22px, 5.4vh, 32px); }
-    .date{ font-size:12px; }
-    .tile{ max-height:72px; border-radius:14px; }
-    .pay-card{ padding:10px 12px; }
-    .pay-card .pay-email{ display:none; }
-    .pay-card .tpop-fund{ display:none; }
-  }
+  html.pwa-fitted[data-wide="1"] .pwa-hero{ display:block; }
+  html.pwa-fitted[data-wide="1"] .info,
+  html.pwa-fitted[data-wide="1"] .divider{ display:none; }
+
+  html.pwa-fitted[data-wide="0"][data-vph="tall"] .headline,
+  html.pwa-fitted[data-wide="0"][data-vph="tall"] .subtext{ display:block; }
+
+  html[data-vph="short"] .time,
+  html[data-vph="short"] .date,
+  html[data-vph="mid"] .time,
+  html[data-vph="mid"] .date{ display:none; }
+  html[data-vph="short"] .pay-card,
+  html[data-vph="mid"] .pay-card{ padding:10px 12px; }
+  html[data-vph="short"] .pay-card .tpop-fund,
+  html[data-vph="short"] .pay-card .pay-email,
+  html[data-vph="mid"] .pay-card .tpop-fund{ display:none; }
+  html[data-vph="short"] .pay-stack,
+  html[data-vph="mid"] .pay-stack{ gap:6px; }
+  html[data-vph="short"] .panel,
+  html[data-vph="mid"] .panel{ gap:6px; padding-top:max(8px, env(safe-area-inset-top)); overflow-y:auto; }
+  html[data-vph="short"] .tile{ max-height:64px; border-radius:14px; }
+  html[data-vpw="xs"] .tile{ max-height:56px; border-radius:12px; }
+  html[data-vpw="xs"] .pay-card .tpop-kpis{ gap:4px; }
 
   /* install button, unobtrusive, only shows when app is installable */
   #installBtn{
@@ -296,14 +332,59 @@
     backdrop-filter:blur(6px);
   }
 </style>
+<script>
+(function () {
+  function fitGooPwa() {
+    var vv = window.visualViewport;
+    var w = Math.round((vv && vv.width) || window.innerWidth || 360);
+    var h = Math.round((vv && vv.height) || window.innerHeight || 640);
+    var root = document.documentElement;
+    var vpw = w < 380 ? 'xs' : w < 480 ? 'sm' : w < 768 ? 'md' : w < 1100 ? 'lg' : 'xl';
+    var vph = h < 560 ? 'short' : h < 740 ? 'mid' : 'tall';
+    var wide = w >= 900 && h >= 600;
+    root.setAttribute('data-vpw', vpw);
+    root.setAttribute('data-vph', vph);
+    root.setAttribute('data-wide', wide ? '1' : '0');
+    root.classList.add('pwa-fitted');
+    var pad = w < 480 ? 14 : 28;
+    var gridW = Math.min(440, Math.max(240, w - pad * 2));
+    if (wide) gridW = Math.min(440, Math.max(280, w * 0.38));
+    var gap = w < 400 ? 6 : w < 600 ? 8 : 10;
+    var tile = Math.floor((gridW - gap * 3) / 4);
+    tile = Math.max(52, Math.min(86, tile));
+    if (vph === 'short') tile = Math.max(52, Math.min(tile, 64));
+    else if (vph === 'mid') tile = Math.max(56, Math.min(tile, 76));
+    var rows = 3;
+    var payBudget = vph === 'short' ? 210 : vph === 'mid' ? 280 : 340;
+    var chrome = 88 + (wide ? 0 : (vph === 'tall' ? 120 : vph === 'mid' ? 56 : 0));
+    var leftover = h - payBudget - chrome - gap * 2;
+    var tileFromHeight = Math.floor((leftover - gap * (rows - 1)) / rows);
+    if (tileFromHeight > 40) tile = Math.max(52, Math.min(tile, tileFromHeight));
+    gridW = tile * 4 + gap * 3;
+    root.style.setProperty('--tile', tile + 'px');
+    root.style.setProperty('--gap', gap + 'px');
+    root.style.setProperty('--grid-w', gridW + 'px');
+  }
+  window.fitGooPwa = fitGooPwa;
+  fitGooPwa();
+  addEventListener('resize', fitGooPwa);
+  addEventListener('orientationchange', function () { setTimeout(fitGooPwa, 80); });
+  if (window.visualViewport) visualViewport.addEventListener('resize', fitGooPwa);
+})();
+</script>
 </head>
 <body data-shell="pwa">
+
+<div class="pwa-hero" id="pwaHero">
+  <h1>Save the<br>Ocean</h1>
+  <p>More than a football field of coral and mangrove is lost every hour. From bleaching reefs to vanishing shorelines, the consequences of a warming ocean are far reaching.</p>
+</div>
 
 <div class="stage">
   <div class="panel">
     <div class="info">
-      <div class="headline" id="headlineText">Global Impact Ledger</div>
-      <div class="subtext" id="subtextText">Tracking 14 active deployment zones and 2.4M sq km of monitored terrain across 8 countries.</div>
+      <div class="headline" id="headlineText">Save the Ocean</div>
+      <div class="subtext" id="subtextText">More than a football field of coral and mangrove is lost every hour. From bleaching reefs to vanishing shorelines, the consequences of a warming ocean are far reaching.</div>
 
       <div class="time" id="timeText">--:--<sup id="ampm">am</sup></div>
       <div class="date" id="dateText">—</div>
@@ -371,12 +452,13 @@
   <button type="button" class="close-view" id="pwaCloseView" aria-label="Back to ledger">←</button>
   <iframe id="pwaIframe" title="Guardians maps"></iframe>
 </div>
-<script src="../../js/goo-config.js"></script>
+<script src="../../js/api/config.js"></script>
+<script src="../../js/api/client.js"></script>
+<script src="../../js/api/wallet-ui.js"></script>
 <script src="../../js/goo-core.js"></script>
 <script src="../../js/goo-news.js"></script>
 <script src="../../js/goo-compass.js"></script>
 <script src="../../js/goo-shell.js"></script>
-<script src="../../js/goo-stripe.js"></script>
 <script src="../../js/pwa-app.js"></script>
 </body>
 </html>
