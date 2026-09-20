@@ -55,6 +55,12 @@ html.embed .n-avatar-fab, html.mobile .n-avatar-fab{
   background:radial-gradient(circle at 32% 28%, #fff 0 18%, var(--ava) 46%, #0a2a44 100%);
   color:#fff; overflow:visible;
 }
+.n-ava img{
+  position:absolute; inset:2px; z-index:1;
+  width:calc(100% - 4px); height:calc(100% - 4px);
+  border-radius:50%; object-fit:cover; display:block;
+}
+.n-ava.has-photo b{ display:none; }
 .n-ava b{
   position:relative; z-index:1;
   font:700 13px/1 'Space Grotesk',sans-serif; letter-spacing:.04em;

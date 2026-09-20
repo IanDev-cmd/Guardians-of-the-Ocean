@@ -75,11 +75,11 @@
   });
 
   var CREW = [
-    { name: 'Amina Okonkwo', role: 'Lagos · waste traps', initials: 'AO', hue: '#0ba6ff', rating: 4.8, progress: 82 },
-    { name: 'Linh Tran', role: 'Mekong · mangroves', initials: 'LT', hue: '#16a34a', rating: 4.9, progress: 91 },
-    { name: 'Rafael Santos', role: 'Manila · reef line', initials: 'RS', hue: '#dc7519', rating: 4.5, progress: 64 },
-    { name: 'Maya Chen', role: 'Miami · living shore', initials: 'MC', hue: '#7c5cff', rating: 4.2, progress: 48 },
-    { name: 'Juma Mwangi', role: 'Mombasa · estuary', initials: 'JM', hue: '#0f8a78', rating: 4.7, progress: 73 }
+    { name: 'Amina Okonkwo', role: 'Lagos · waste traps', initials: 'AO', hue: '#0ba6ff', rating: 4.8, progress: 82, photo: 'https://randomuser.me/api/portraits/women/17.jpg' },
+    { name: 'Linh Tran', role: 'Mekong · mangroves', initials: 'LT', hue: '#16a34a', rating: 4.9, progress: 91, photo: 'https://randomuser.me/api/portraits/women/65.jpg' },
+    { name: 'Rafael Santos', role: 'Manila · reef line', initials: 'RS', hue: '#dc7519', rating: 4.5, progress: 64, photo: 'https://randomuser.me/api/portraits/men/32.jpg' },
+    { name: 'Maya Chen', role: 'Miami · living shore', initials: 'MC', hue: '#7c5cff', rating: 4.2, progress: 48, photo: 'https://randomuser.me/api/portraits/women/47.jpg' },
+    { name: 'Juma Mwangi', role: 'Mombasa · estuary', initials: 'JM', hue: '#0f8a78', rating: 4.7, progress: 73, photo: 'https://randomuser.me/api/portraits/men/75.jpg' }
   ];
 
   function starHtml(n) {
@@ -93,8 +93,12 @@
   }
 
   function avaHtml(p, extra) {
-    return '<span class="n-ava' + (extra ? ' ' + extra : '') + '" style="--ava:' + p.hue + '">' +
+    var photo = p.photo
+      ? '<img src="' + esc(p.photo) + '" alt="' + esc(p.name) + '" width="80" height="80" decoding="async">'
+      : '';
+    return '<span class="n-ava' + (p.photo ? ' has-photo' : '') + (extra ? ' ' + extra : '') + '" style="--ava:' + p.hue + '">' +
       '<i class="n-ava-ring" aria-hidden="true"></i>' +
+      photo +
       '<b>' + esc(p.initials) + '</b>' +
     '</span>';
   }
@@ -185,6 +189,19 @@
           '</div>' +
         '</div>';
       document.body.appendChild(this.crew);
+
+      function bindPhotoFallback(rootEl) {
+        if (!rootEl) return;
+        rootEl.querySelectorAll('.n-ava.has-photo img').forEach(function (img) {
+          img.addEventListener('error', function () {
+            var wrap = img.parentNode;
+            if (wrap) wrap.classList.remove('has-photo');
+            if (img.parentNode) img.remove();
+          });
+        });
+      }
+      bindPhotoFallback(this.crewBtn);
+      bindPhotoFallback(this.crew);
 
       var self = this;
       this.crewBtn.addEventListener('click', function (e) {
