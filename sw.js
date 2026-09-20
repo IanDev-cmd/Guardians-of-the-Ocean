@@ -1,4 +1,4 @@
-const CACHE_NAME = 'guardians-ocean-v25';
+const CACHE_NAME = 'guardians-ocean-v26';
 const ASSETS = [
   './',
   './index.html',
